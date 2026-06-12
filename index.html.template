@@ -660,8 +660,6 @@
                     const headers = this.tableColumns.map(col => col.label).join(',') + ',Whatsapp,Call,Email';
                     csvContent += headers + String.fromCharCode(10);
 
-';
-                    csvContent += headers;
 
                     this.filteredLeads.forEach(lead => {
                         const row = this.tableColumns.map(col => {
@@ -678,8 +676,7 @@
                             `"${lead.phone ? `tel:${lead.phone}` : ''}"`,
                             `"${lead.email ? `mailto:${lead.email}` : ''}"`
                         ].join(',');
-                        csvContent += row + ',' + quickActions + '
-';
+                        csvContent += row + ',' + quickActions + String.fromCharCode(10);
                     });
 
                     const encodedUri = encodeURI(csvContent);
