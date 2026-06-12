@@ -495,7 +495,7 @@
                 const res = await fetch(url, {
                     headers: {
                         'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ***`,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
                         'Content-Type': 'application/json',
                     }
                 });
@@ -508,7 +508,7 @@
                     method: 'PATCH',
                     headers: {
                         'apikey': SUPABASE_ANON_KEY,
-                        'Authorization': `Bearer ***`,
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
                         'Content-Type': 'application/json',
                         'Prefer': 'return=minimal',
                     },
@@ -734,25 +734,25 @@
                         title: {
                             display: true,
                             text: 'Leads Creados Últimos 7 Días',
-                            color: var(--text-color)
+                            color: '#e2e8f0'
                         }
                     },
                     scales: {
                         x: {
                             grid: {
-                                color: var(--border-color),
+                                color: '#334155',
                             },
                             ticks: {
-                                color: var(--secondary-text-color)
+                                color: '#94a3b8'
                             }
                         },
                         y: {
                             beginAtZero: true,
                             grid: {
-                                color: var(--border-color),
+                                color: '#334155',
                             },
                             ticks: {
-                                color: var(--secondary-text-color),
+                                color: '#94a3b8',
                                 precision: 0
                             }
                         }
@@ -810,23 +810,16 @@
             try {
                 await supabaseFetch.patch('leads', selectedLeadId, { status: newStatus, updated_at: updated_at });
                 console.log('Lead status updated successfully');
-                document.getElementById('detailPanel').classList.add('hidden');
-                await fetchLeads();
-            } catch (error) {
-                console.error('Error updating lead status:', error.message);
-                alert('Error al actualizar el estado del lead.');
-            }
-            }
-
-            if (data && data.length > 0) {
                 alert('Estado del lead actualizado con éxito.');
-                // Update the lead in our local allLeads array
                 const index = allLeads.findIndex(lead => lead.id === selectedLeadId);
                 if (index !== -1) {
                     allLeads[index] = { ...allLeads[index], status: newStatus, updated_at: updated_at };
                 }
-                applyFiltersAndSort(); // Re-render table and update stats
+                applyFiltersAndSort();
                 closeLeadDetail();
+            } catch (error) {
+                console.error('Error updating lead status:', error.message);
+                alert('Error al actualizar el estado del lead.');
             }
         }
 
