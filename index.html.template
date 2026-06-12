@@ -444,7 +444,7 @@
 
     <script>
         // Supabase configuration - values will be replaced by envsubst
-        const SUPABASE_URL = '${SUPABASE_URL}'; // e.g., /api
+        const SUPABASE_URL = '/api'; // e.g., /api
         const SUPABASE_ANON_KEY = '${SUPABASE_ANON_KEY}'; // Auth header for Supabase
 
         // Chart.js global defaults for dark theme
@@ -533,7 +533,7 @@
                     };
 
                     try {
-                        const response = await fetch(`${SUPABASE_URL}${endpoint}`, {
+                        const response = await fetch(`/api${endpoint}`, {
                             ...options,
                             headers: headers
                         });
