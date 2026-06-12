@@ -4,987 +4,959 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GeneraIA CRM Dashboard</title>
-
-    <!-- Google Fonts: Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- Tailwind CSS Play CDN -->
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <style type="text/tailwindcss">
-        @layer base {
-            html {
-                font-family: 'Inter', sans-serif;
-            }
-        }
-    </style>
-
-    <!-- Alpine.js -->
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
-
-    <!-- Sortable.js -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
-
     <style>
-        body {
-            background-color: #0f172a; /* Dark theme background */
-            color: #e2e8f0; /* Light text */
-        }
-        .card {
-            background-color: #1e293b; /* Card background */
-            border-color: #334155; /* Border color */
-        }
-        .accent-text {
-            color: #f59e0b; /* Accent color */
-        }
-        .accent-bg {
-            background-color: #f59e0b; /* Accent background */
-        }
-        .scrollable-kanban {
-            display: flex;
-            overflow-x: auto;
-            gap: 1rem;
-            padding-bottom: 1rem;
-        }
-        .kanban-column {
-            min-width: 300px;
-            flex-shrink: 0;
-            border-width: 1px;
-        }
-        .kanban-card {
-            background-color: #334155;
-        }
-        .dark-scrollbar::-webkit-scrollbar {
+        body { font-family: 'Inter', sans-serif; }
+        /* Custom scrollbar for kanban */
+        .kanban-scroll::-webkit-scrollbar {
             height: 8px;
-            width: 8px;
         }
-        .dark-scrollbar::-webkit-scrollbar-thumb {
-            background-color: #475569;
+        .kanban-scroll::-webkit-scrollbar-track {
+            background: #12121a;
+        }
+        .kanban-scroll::-webkit-scrollbar-thumb {
+            background: #4a5568;
             border-radius: 4px;
         }
-        .dark-scrollbar::-webkit-scrollbar-track {
-            background-color: #1e293b;
+        .kanban-scroll::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+        /* Custom scrollbar for detail panel */
+        .detail-panel-scroll::-webkit-scrollbar {
+            width: 8px;
+        }
+        .detail-panel-scroll::-webkit-scrollbar-track {
+            background: #12121a;
+        }
+        .detail-panel-scroll::-webkit-scrollbar-thumb {
+            background: #4a5568;
+            border-radius: 4px;
+        }
+        .detail-panel-scroll::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
         }
     </style>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <!-- Sortable.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <!-- Alpine.js CDN -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="dark-scrollbar">
-    <div x-data="crmDashboard()" x-init="init()" class="min-h-screen p-6">
-        <!-- Top Bar -->
-        <header class="flex justify-between items-center mb-6">
-            <h1 class="text-3xl font-bold accent-text">GeneraIA CRM Dashboard</h1>
+<body class="bg-[#0a0a0f] text-[#e2e8f0] flex h-screen overflow-hidden" x-data="crmDashboard()">
+
+    <!-- Sidebar -->
+    <aside :class="{'w-24': !sidebarExpanded, 'w-64': sidebarExpanded}"
+           class="bg-[#12121a] flex-shrink-0 border-r border-[#1e1e2e] p-4 flex flex-col transition-all duration-300">
+        <div class="flex-shrink-0 mb-8">
+            <template x-if="sidebarExpanded">
+                <img src="https://placehold.co/120x40" alt="GeneraIA Logo" class="h-10 mx-auto">
+            </template>
+            <template x-if="!sidebarExpanded">
+                <img src="https://placehold.co/40x40" alt="GeneraIA Logo" class="h-10 mx-auto">
+            </template>
+        </div>
+        <nav class="flex-grow">
+            <ul>
+                <li class="mb-2">
+                    <a href="#" @click="activeView = 'dashboard'"
+                       :class="{'bg-[#f59e0b] text-[#0a0a0f]': activeView === 'dashboard', 'text-[#e2e8f0] hover:bg-[#1e1e2e]': activeView !== 'dashboard'}"
+                       class="flex items-center p-3 rounded-lg transition-colors duration-200">
+                        <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                        <span x-show="sidebarExpanded" class="ml-3">Dashboard</span>
+                    </a>
+                </li>
+                <li class="mb-2">
+                    <a href="#" @click="activeView = 'leads'"
+                       :class="{'bg-[#f59e0b] text-[#0a0a0f]': activeView === 'leads', 'text-[#e2e8f0] hover:bg-[#1e1e2e]': activeView !== 'leads'}"
+                       class="flex items-center p-3 rounded-lg transition-colors duration-200">
+                        <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M12 20.354a4 4 0 010-5.292a4 4 0 010 5.292zM18 20.354a4 4 0 010-5.292M18 4.354a4 4 0 010 5.292a4 4 0 010-5.292zM6 4.354a4 4 0 010 5.292M6 20.354a4 4 0 010-5.292a4 4 0 010 5.292z"></path></svg>
+                        <span x-show="sidebarExpanded" class="ml-3">Leads</span>
+                    </a>
+                </li>
+                <li class="mb-2">
+                    <a href="#" @click="activeView = 'pipeline'"
+                       :class="{'bg-[#f59e0b] text-[#0a0a0f]': activeView === 'pipeline', 'text-[#e2e8f0] hover:bg-[#1e1e2e]': activeView !== 'pipeline'}"
+                       class="flex items-center p-3 rounded-lg transition-colors duration-200">
+                        <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 0h10a2 2 0 012 2v2a2 2 0 01-2 2h-4v2a2 2 0 01-2 2H9a2 2 0 01-2-2v-4a2 2 0 012-2h2a2 2 0 012 2h5"></path></svg>
+                        <span x-show="sidebarExpanded" class="ml-3">Pipeline</span>
+                    </a>
+                </li>
+                <li class="mb-2">
+                    <a href="#" @click="activeView = 'analytics'"
+                       :class="{'bg-[#f59e0b] text-[#0a0a0f]': activeView === 'analytics', 'text-[#e2e8f0] hover:bg-[#1e1e2e]': activeView !== 'analytics'}"
+                       class="flex items-center p-3 rounded-lg transition-colors duration-200">
+                        <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
+                        <span x-show="sidebarExpanded" class="ml-3">Analytics</span>
+                    </a>
+                </li>
+                <li class="mb-2">
+                    <a href="#" @click="activeView = 'settings'"
+                       :class="{'bg-[#f59e0b] text-[#0a0a0f]': activeView === 'settings', 'text-[#e2e8f0] hover:bg-[#1e1e2e]': activeView !== 'settings'}"
+                       class="flex items-center p-3 rounded-lg transition-colors duration-200">
+                        <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.527.288 1.05.028 1.487-.208z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        <span x-show="sidebarExpanded" class="ml-3">Configuración</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <div class="mt-auto pt-4 border-t border-[#1e1e2e] flex items-center justify-between" x-show="sidebarExpanded">
+            <div class="flex items-center">
+                <img src="https://placehold.co/40x40" alt="User Avatar" class="rounded-full mr-3">
+                <span>User Name</span>
+            </div>
+            <button @click="sidebarExpanded = !sidebarExpanded"
+                    class="p-2 rounded-full hover:bg-[#1e1e2e] text-[#e2e8f0]">
+                <svg :class="{'rotate-180': sidebarExpanded}" class="w-5 h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg>
+            </button>
+        </div>
+        <div class="mt-auto pt-4 border-t border-[#1e1e2e] flex items-center justify-center" x-show="!sidebarExpanded">
+             <button @click="sidebarExpanded = !sidebarExpanded"
+                    class="p-2 rounded-full hover:bg-[#1e1e2e] text-[#e2e8f0]">
+                <svg :class="{'rotate-180': sidebarExpanded}" class="w-5 h-5 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path></svg>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-grow flex flex-col p-4">
+        <!-- Header -->
+        <header class="flex items-center justify-between pb-4 border-b border-[#1e1e2e] mb-4">
+            <h1 class="text-2xl font-bold" x-text="pageTitle"></h1>
             <div class="flex items-center space-x-4">
-                <button @click="isKanbanView = !isKanbanView" class="px-4 py-2 rounded-md font-medium"
-                        :class="isKanbanView ? 'bg-gray-700 text-gray-200' : 'bg-orange-500 text-white'">
-                    <span x-text="isKanbanView ? 'Table View' : 'Kanban View'"></span>
-                </button>
-                <button @click="openAddLeadModal()" class="accent-bg text-white px-4 py-2 rounded-md font-medium hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50">
-                    + Add Lead
-                </button>
                 <div class="relative">
-                    <button @click="showNotifications = !showNotifications" class="relative text-gray-400 hover:text-gray-300">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
-                        <span x-show="newNotificationsCount > 0" x-text="newNotificationsCount" class="absolute -top-1 -right-1 bg-red-600 text-white text-xs font-semibold rounded-full h-4 w-4 flex items-center justify-center"></span>
-                    </button>
-                    <div x-show="showNotifications" @click.away="showNotifications = false"
-                        class="absolute right-0 mt-2 w-80 bg-gray-800 rounded-md shadow-lg py-2 z-20 max-h-96 overflow-y-auto dark-scrollbar">
-                        <div class="px-4 py-2 text-gray-300 font-semibold border-b border-gray-700">Notifications</div>
-                        <template x-for="notification in notifications" :key="notification.id">
-                            <div class="px-4 py-2 border-b border-gray-700 last:border-b-0 hover:bg-gray-700">
-                                <p class="text-sm text-gray-200" x-text="notification.message"></p>
-                                <p class="text-xs text-gray-400" x-text="formatDate(notification.created_at, true)"></p>
-                            </div>
-                        </template>
-                        <div x-show="notifications.length === 0" class="px-4 py-2 text-gray-400 text-sm">No new notifications.</div>
-                    </div>
+                    <input type="text" placeholder="Search..."
+                           class="bg-[#1e1e2e] text-[#e2e8f0] rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-[#f59e0b]">
+                    <svg class="w-5 h-5 text-[#9a9a9a] absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </div>
+                <button class="p-2 rounded-full hover:bg-[#1e1e2e] text-[#e2e8f0]">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                </button>
+                <button class="bg-[#f59e0b] text-[#0a0a0f] py-2 px-4 rounded-lg flex items-center space-x-2">+ New Lead</button>
             </div>
         </header>
 
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <div class="card p-4 rounded-lg shadow">
-                <h3 class="text-sm font-semibold text-gray-400">Total Leads</h3>
-                <p class="text-2xl font-bold mt-1" x-text="stats.totalLeads"></p>
-            </div>
-            <div class="card p-4 rounded-lg shadow">
-                <h3 class="text-sm font-semibold text-gray-400">Nuevos Hoy</h3>
-                <p class="text-2xl font-bold mt-1" x-text="stats.newLeadsToday"></p>
-            </div>
-            <div class="card p-4 rounded-lg shadow">
-                <h3 class="text-sm font-semibold text-gray-400">Conversión</h3>
-                <p class="text-2xl font-bold mt-1" x-text="stats.conversionRate"></p>
-            </div>
-            <div class="card p-4 rounded-lg shadow">
-                <h3 class="text-sm font-semibold text-gray-400">Interés Popular</h3>
-                <p class="text-2xl font-bold mt-1" x-text="stats.popularInterest"></p>
-            </div>
-        </div>
-
-        <!-- Charts -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <div class="card p-4 rounded-lg shadow">
-                <h3 class="text-lg font-semibold mb-4">Leads per Day (Last 30 Days)</h3>
-                <canvas id="leadsPerDayChart"></canvas>
-            </div>
-            <div class="card p-4 rounded-lg shadow">
-                <h3 class="text-lg font-semibold mb-4">Pipeline Funnel</h3>
-                <canvas id="pipelineFunnelChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Main Content Area -->
-        <div x-show="isKanbanView" class="scrollable-kanban dark-scrollbar">
-            <template x-for="status in leadStatuses" :key="status.value">
-                <div class="kanban-column card rounded-lg shadow p-4" :data-status="status.value">
-                    <h2 class="text-xl font-semibold mb-4 border-b border-gray-700 pb-2 flex items-center justify-between">
-                        <span x-text="status.label"></span>
-                        <span class="text-gray-400 text-sm" x-text="filteredLeadsByStatus(status.value).length"></span>
-                    </h2>
-                    <div class="kanban-cards space-y-3 min-h-[100px]" :id="`kanban-${status.value}`">
-                        <template x-for="lead in filteredLeadsByStatus(status.value)" :key="lead.id">
-                            <div class="kanban-card p-3 rounded-lg shadow cursor-grab active:cursor-grabbing hover:ring-1 ring-orange-500"
-                                :data-lead-id="lead.id" @click="openLeadDetail(lead)">
-                                <p class="font-medium" x-text="lead.name"></p>
-                                <p class="text-sm text-gray-400" x-text="lead.phone"></p>
-                                <div class="flex justify-end space-x-2 mt-2 text-gray-400">
-                                    <a :href="`https://wa.me/${lead.whatsapp_id || lead.phone}`" target="_blank" class="hover:text-f59e0b" x-show="lead.whatsapp_id || lead.phone">
-                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.554-3.844-1.557-5.891 0-6.556 5.338-11.894 11.893-11.894 3.181.001 6.167 1.24 8.413 3.488 2.246 2.248 3.486 5.236 3.486 8.414 0 6.559-5.338 11.897-11.892 11.897-1.959-.001-3.92-.502-5.696-1.477l-6.208 1.625zm6.591-4.877c-.503-.217-.653-.32-.924-.32s-.486-.098-.748-.098c-.287 0-.58.113-.884.407-.309.309-1.127 1.16-1.371 1.4-.241.247-.484.275-.905.137-.417-.133-1.033-.388-1.96-.96-1.571-.977-2.617-2.674-2.92-3.195-.306-.525-.032-.807.221-1.061.229-.232.518-.544.7-.768.188-.227.247-.197.355-.37s.057-.34.028-.644c-.029-.304-.265-.727-.361-.951-.097-.225-.084-.199-.187-.461-.103-.262-.751-1.996-1.027-2.735-.275-.74-.549-.63-.759-.64-.176-.007-.373-.01-.57-.01-.202 0-.533.076-.819.38-.286.305-1.092 1.064-1.092 2.593 0 1.529 1.114 2.997 1.267 3.212.152.215 2.138 3.292 5.166 4.542 3.028 1.249 3.738.995 4.405.922.656-.07 1.954-.799 2.223-1.58.267-.78.267-1.441.186-1.58-.081-.14-.287-.217-.597-.363z"/></svg>
-                                    </a>
-                                    <a :href="`tel:${lead.phone}`" target="_blank" class="hover:text-f59e0b" x-show="lead.phone">
-                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.32.57 3.57.57.55 0 1 .45 1 1v3.5c0 .55-.45 1-1 1C10.74 21 3 13.26 3 3.5c0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.12.35.03.75-.24 1.02l-2.2 2.2z"/></svg>
-                                    </a>
-                                    <a :href="`mailto:${lead.email}`" target="_blank" class="hover:text-f59e0b" x-show="lead.email">
-                                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-                                    </a>
-                                </div>
+        <!-- Dynamic Content Area -->
+        <main class="flex-grow overflow-y-auto detail-panel-scroll">
+            <div x-show="activeView === 'dashboard'">
+                <!-- Stats Row -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <template x-for="stat in stats" :key="stat.label">
+                        <div class="bg-[#12121a] p-5 rounded-lg border border-[#1e1e2e] flex items-center justify-between">
+                            <div>
+                                <div class="text-sm text-[#9a9a9a]" x-text="stat.label"></div>
+                                <div class="text-3xl font-bold text-[#e2e8f0]" x-text="stat.value"></div>
                             </div>
-                        </template>
-                        <div x-show="filteredLeadsByStatus(status.value).length === 0" class="text-gray-500 text-center py-4 text-sm">
-                            No leads in this stage.
+                            <div class="text-right">
+                                <span :class="{'text-green-500': stat.trend === 'up', 'text-red-500': stat.trend === 'down'}"
+                                      class="flex items-center text-sm font-semibold">
+                                    <template x-if="stat.trend === 'up'">
+                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414L10 3.586l4.707 4.707a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
+                                    </template>
+                                    <template x-if="stat.trend === 'down'">
+                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M14.707 10.293a1 1 0 010 1.414L10 16.414l-4.707-4.707a1 1 0 011.414-1.414L9 12.586V5a1 1 0 112 0v7.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                                    </template>
+                                    <span x-text="stat.percentage"></span>%
+                                </span>
+                                <div class="text-xs text-[#9a9a9a]" x-text="stat.period"></div>
+                            </div>
                         </div>
+                    </template>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-[#12121a] p-5 rounded-lg border border-[#1e1e2e]">
+                        <h3 class="text-lg font-semibold mb-4">Leads Over Time</h3>
+                        <canvas id="leadsLineChart"></canvas>
+                    </div>
+                    <div class="bg-[#12121a] p-5 rounded-lg border border-[#1e1e2e]">
+                        <h3 class="text-lg font-semibold mb-4">Lead Status Distribution</h3>
+                        <canvas id="statusDoughnutChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recent Activities (Placeholder) -->
+                <div class="bg-[#12121a] p-5 rounded-lg border border-[#1e1e2e]">
+                    <h3 class="text-lg font-semibold mb-4">Recent Activities</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-center space-x-2">
+                            <span class="text-green-500">&#x2022;</span>
+                            <span>New lead <span class="font-semibold">John Doe</span> added.</span>
+                            <span class="text-xs text-[#9a9a9a]">2 hours ago</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <span class="text-blue-500">&#x2022;</span>
+                            <span>Lead <span class="font-semibold">Jane Smith</span> contacted.</span>
+                            <span class="text-xs text-[#9a9a9a]">1 day ago</span>
+                        </li>
+                        <li class="flex items-center space-x-2">
+                            <span class="text-orange-500">&#x2022;</span>
+                            <span>Trial scheduled for <span class="font-semibold">Peter Jones</span>.</span>
+                            <span class="text-xs text-[#9a9a9a]">3 days ago</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div x-show="activeView === 'leads'">
+                <h2 class="text-xl font-bold mb-4">All Leads</h2>
+                <!-- Filters -->
+                <div class="flex space-x-2 mb-4">
+                    <template x-for="s in statusOptions" :key="s.value">
+                        <button @click="filterStatus = (filterStatus === s.value ? '' : s.value)"
+                                :class="{ 'bg-[#f59e0b] text-[#0a0a0f]': filterStatus === s.value, 'bg-[#1e1e2e] text-[#e2e8f0] hover:bg-[#1e1e2e]/70': filterStatus !== s.value }"
+                                class="py-1 px-3 rounded-full text-sm">
+                            <span x-text="s.label"></span> (<span x-text="filteredLeads.filter(lead => lead.status === s.value).length"></span>)
+                        </button>
+                    </template>
+                     <button @click="exportCSV()" class="bg-green-600 text-white py-1 px-3 rounded-full text-sm hover:bg-green-700">
+                        Export CSV
+                    </button>
+                </div>
+
+                <!-- Table View -->
+                <div class="bg-[#12121a] p-5 rounded-lg border border-[#1e1e2e] overflow-x-auto">
+                    <table class="min-w-full divide-y divide-[#1e1e2e]">
+                        <thead>
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-[#9a9a9a] uppercase tracking-wider"></th>
+                                <template x-for="col in tableColumns" :key="col.key">
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-[#9a9a9a] uppercase tracking-wider cursor-pointer"
+                                        @click="sortByColumn(col.key)">
+                                        <div class="flex items-center">
+                                            <span x-text="col.label"></span>
+                                            <template x-if="sortColumn === col.key">
+                                                <span x-html="sortDirection === 'asc' ? '&uarr;' : '&darr;'"></span>
+                                            </template>
+                                        </div>
+                                    </th>
+                                </template>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-[#9a9a9a] uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-[#1e1e2e]">
+                            <template x-for="lead in paginatedLeads" :key="lead.id">
+                                <tr class="hover:bg-[#1e1e2e] cursor-pointer" @click="openLeadDetail(lead)">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="w-3 h-3 rounded-full" :style="{ backgroundColor: getStatusColor(lead.status) }"></div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap" x-text="lead.name"></td>
+                                    <td class="px-6 py-4 whitespace-nowrap" x-text="lead.email"></td>
+                                    <td class="px-6 py-4 whitespace-nowrap" x-text="lead.phone"></td>
+                                    <td class="px-6 py-4 whitespace-nowrap" x-text="lead.statusLabel"></td>
+                                    <td class="px-6 py-4 whitespace-nowrap" x-text="lead.course_interest"></td>
+                                    <td class="px-6 py-4 whitespace-nowrap" x-text="lead.source"></td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <button @click.stop="editLead(lead)" class="text-[#f59e0b] hover:text-[#e2e8f0] mx-1">Edit</button>
+                                        <button @click.stop="deleteLead(lead.id)" class="text-red-500 hover:text-red-400 mx-1">Delete</button>
+                                    </td>
+                                </tr>
+                            </template>
+                            <template x-if="paginatedLeads.length === 0">
+                                <tr>
+                                    <td colspan="8" class="text-center py-8 text-[#9a9a9a]">No leads found.</td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="flex justify-between items-center mt-4">
+                    <span class="text-sm text-[#9a9a9a]">Showing <span x-text="firstLeadIndex"></span> to <span x-text="lastLeadIndex"></span> of <span x-text="filteredLeads.length"></span> leads</span>
+                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                        <button @click="currentPage = Math.max(1, currentPage - 1)"
+                                :disabled="currentPage === 1"
+                                class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-[#1e1e2e] bg-[#12121a] text-sm font-medium text-[#e2e8f0] hover:bg-[#1e1e2e] disabled:opacity-50 disabled:cursor-not-allowed">
+                            Previous
+                        </button>
+                        <template x-for="page in totalPages" :key="page">
+                            <button @click="currentPage = page"
+                                    aria-current="page"
+                                    :class="{'z-10 bg-[#f59e0b] text-[#0a0a0f] border-[#f59e0b]': page === currentPage, 'bg-[#12121a] border-[#1e1e2e] text-[#e2e8f0] hover:bg-[#1e1e2e]': page !== currentPage}"
+                                    class="relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                <span x-text="page"></span>
+                            </button>
+                        </template>
+                        <button @click="currentPage = Math.min(totalPages, currentPage + 1)"
+                                :disabled="currentPage === totalPages"
+                                class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-[#1e1e2e] bg-[#12121a] text-sm font-medium text-[#e2e8f0] hover:bg-[#1e1e2e] disabled:opacity-50 disabled:cursor-not-allowed">
+                            Next
+                        </button>
+                    </nav>
+                </div>
+            </div>
+
+            <div x-show="activeView === 'pipeline'">
+                <h2 class="text-xl font-bold mb-4">Sales Pipeline</h2>
+                <!-- Kanban Board -->
+                <div class="flex overflow-x-auto space-x-4 pb-4 kanban-scroll">
+                    <template x-for="statusObj in statusOptions" :key="statusObj.value">
+                        <div class="bg-[#12121a] rounded-lg border border-[#1e1e2e] flex-shrink-0 w-80">
+                            <div class="h-2 rounded-t-lg" :style="{ backgroundColor: statusObj.color }"></div>
+                            <h3 class="text-lg font-semibold px-4 py-3 border-b border-[#1e1e2e]" x-text="statusObj.label"></h3>
+                            <div class="p-4 min-h-[200px]"
+                                 :id="'kanban-col-' + statusObj.value"
+                                 x-init="$nextTick(() => initializeSortable(statusObj.value))">
+                                <template x-for="lead in leadsByStatus[statusObj.value]" :key="lead.id">
+                                    <div class="bg-[#1e1e2e] p-4 mb-3 rounded-lg shadow-md border-l-4 cursor-grab active:cursor-grabbing"
+                                         :style="{ borderColor: getStatusColor(lead.status) }"
+                                         @click="openLeadDetail(lead)">
+                                        <div class="flex items-center mb-2">
+                                            <span class="w-3 h-3 rounded-full mr-2" :style="{ backgroundColor: getStatusColor(lead.status) }"></span>
+                                            <span class="font-semibold" x-text="lead.name"></span>
+                                        </div>
+                                        <p class="text-sm text-[#9a9a9a]"><span x-text="lead.phone"></span> | <span x-text="lead.source"></span></p>
+                                        <div class="flex justify-end mt-3 space-x-2">
+                                            <button @click.stop="contactLead(lead.id)" class="text-[#f59e0b] hover:text-[#e2e8f0]">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-1.618A2 2 0 0015.382 17H9.236A2 2 0 017 14.382V12c0-.55.22-1.028.539-1.382l4.81-4.81a2 2 0 012.828 0l4.81 4.81c.319.354.539.832.539 1.382v2.382a2 2 0 01-2 2H5a2 2 0 01-2-2V5z"></path></svg>
+                                            </button>
+                                            <button @click.stop="editLead(lead)" class="text-[#f59e0b] hover:text-[#e2e8f0]">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </template>
+                                <template x-if="leadsByStatus[statusObj.value].length === 0">
+                                    <div class="text-center text-[#9a9a9a] py-8 border border-dashed border-[#1e1e2e] rounded-md">
+                                        No leads in this stage.
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <div x-show="activeView === 'analytics'">
+                <h2 class="text-xl font-bold mb-4">Analytics</h2>
+                <p>Analytics content goes here.</p>
+            </div>
+
+            <div x-show="activeView === 'settings'">
+                <h2 class="text-xl font-bold mb-4">Configuración</h2>
+                <p>Configuración content goes here.</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- Lead Detail Panel -->
+    <div x-show="isDetailPanelOpen"
+         @click.away="closeLeadDetail()"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="transform translate-x-full"
+         x-transition:enter-end="transform translate-x-0"
+         x-transition:leave="transition ease-in duration-300"
+         x-transition:leave-start="transform translate-x-0"
+         x-transition:leave-end="transform translate-x-full"
+         class="fixed inset-y-0 right-0 w-96 bg-[#12121a] border-l border-[#1e1e2e] shadow-lg overflow-y-auto detail-panel-scroll z-50 p-6 flex flex-col">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-xl font-bold" x-text="selectedLead.name"></h2>
+            <button @click="closeLeadDetail()" class="text-[#e2e8f0] hover:text-[#9a9a9a]">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+
+        <div class="mb-6 flex space-x-2">
+            <button @click="startEditMode()" x-show="!isEditMode" class="bg-[#f59e0b] text-[#0a0a0f] py-2 px-4 rounded-lg">Edit Lead</button>
+            <button @click="saveLeadChanges()" x-show="isEditMode" class="bg-green-600 text-white py-2 px-4 rounded-lg">Save Changes</button>
+            <button @click="cancelEditMode()" x-show="isEditMode" class="bg-red-600 text-white py-2 px-4 rounded-lg">Cancel</button>
+        </div>
+
+        <div class="flex-grow">
+            <template x-if="!isEditMode">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-[#9a9a9a]">Status</label>
+                        <span class="text-lg font-semibold" :style="{ color: getStatusColor(selectedLead.status) }" x-text="selectedLead.statusLabel"></span>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-[#9a9a9a]">Email</label>
+                        <p class="text-lg" x-text="selectedLead.email"></p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-[#9a9a9a]">Phone</label>
+                        <p class="text-lg" x-text="selectedLead.phone"></p>
+                    </div>
+                     <div>
+                        <label class="block text-sm font-medium text-[#9a9a9a]">WhatsApp ID</label>
+                        <p class="text-lg" x-text="selectedLead.whatsapp_id"></p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-[#9a9a9a]">Course Interest</label>
+                        <p class="text-lg" x-text="selectedLead.course_interest"></p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-[#9a9e9a]">Preferred Schedule</label>
+                        <p class="text-lg" x-text="selectedLead.preferred_schedule"></p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-[#9a9a9a]">Source</label>
+                        <p class="text-lg" x-text="selectedLead.source"></p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-[#9a9a9a]">Notes</label>
+                        <p class="text-lg" x-text="selectedLead.notes || 'N/A'"></p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-[#9a9a9a]">Created At</label>
+                        <p class="text-lg" x-text="new Date(selectedLead.created_at).toLocaleString()"></p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-[#9a9a9a]">Updated At</label>
+                        <p class="text-lg" x-text="new Date(selectedLead.updated_at).toLocaleString()"></p>
                     </div>
                 </div>
             </template>
-        </div>
-
-        <div x-show="!isKanbanView" class="card p-6 rounded-lg shadow">
-            <!-- Table View Controls -->
-            <div class="flex justify-between items-center mb-4">
-                <div class="flex space-x-4">
-                    <input type="text" x-model="searchTerm" @input="filterLeads()" placeholder="Search leads..."
-                           class="w-64 px-4 py-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-1 focus:ring-orange-500">
-                    <select x-model="filterStatus" @change="filterLeads()"
-                            class="px-4 py-2 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-1 focus:ring-orange-500">
-                        <option value="">All Statuses</option>
-                        <template x-for="status in leadStatuses" :key="status.value">
-                            <option :value="status.value" x-text="status.label"></option>
-                        </template>
-                    </select>
-                </div>
-                <button @click="exportCSV()" class="accent-bg text-white px-4 py-2 rounded-md font-medium hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50">
-                    Export CSV
-                </button>
-            </div>
-
-            <!-- Table -->
-            <div class="overflow-x-auto dark-scrollbar">
-                <table class="min-w-full divide-y divide-gray-700">
-                    <thead class="bg-gray-800">
-                        <tr>
-                            <template x-for="column in tableColumns" :key="column.key">
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer"
-                                    @click="sortColumn(column.key)">
-                                    <div class="flex items-center">
-                                        <span x-text="column.label"></span>
-                                        <span x-show="sortBy === column.key">
-                                            <svg x-show="sortDirection === 'asc'" class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
-                                            <svg x-show="sortDirection === 'desc'" class="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                                        </span>
-                                    </div>
-                                </th>
-                            </template>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-700">
-                        <template x-for="lead in paginatedLeads" :key="lead.id">
-                            <tr class="hover:bg-gray-700 cursor-pointer" @click="openLeadDetail(lead)">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white" x-text="lead.name"></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" x-text="lead.phone"></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" x-text="lead.email"></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" x-text="getLabelForStatus(lead.status)"></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" x-text="lead.course_interest"></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-300" x-text="formatDate(lead.created_at)"></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <div class="flex space-x-2 text-gray-400">
-                                        <a :href="`https://wa.me/${lead.whatsapp_id || lead.phone}`" target="_blank" class="hover:text-f59e0b" x-show="lead.whatsapp_id || lead.phone" @click.stop="">
-                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.554-3.844-1.557-5.891 0-6.556 5.338-11.894 11.893-11.894 3.181.001 6.167 1.24 8.413 3.488 2.246 2.248 3.486 5.236 3.486 8.414 0 6.559-5.338 11.897-11.892 11.897-1.959-.001-3.92-.502-5.696-1.477l-6.208 1.625zm6.591-4.877c-.503-.217-.653-.32-.924-.32s-.486-.098-.748-.098c-.287 0-.58.113-.884.407-.309.309-1.127 1.16-1.371 1.4-.241.247-.484.275-.905.137-.417-.133-1.033-.388-1.96-.96-1.571-.977-2.617-2.674-2.92-3.195-.306-.525-.032-.807.221-1.061.229-.232.518-.544.7-.768.188-.227.247-.197.355-.37s.057-.34.028-.644c-.029-.304-.265-.727-.361-.951-.097-.225-.084-.199-.187-.461-.103-.262-.751-1.996-1.027-2.735-.275-.74-.549-.63-.759-.64-.176-.007-.373-.01-.57-.01-.202 0-.533.076-.819.38-.286.305-1.092 1.064-1.092 2.593 0 1.529 1.114 2.997 1.267 3.212.152.215 2.138 3.292 5.166 4.542 3.028 1.249 3.738.995 4.405.922.656-.07 1.954-.799 2.223-1.58.267-.78.267-1.441.186-1.58-.081-.14-.287-.217-.597-.363z"/></svg>
-                                        </a>
-                                        <a :href="`tel:${lead.phone}`" target="_blank" class="hover:text-f59e0b" x-show="lead.phone" @click.stop="">
-                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.32.57 3.57.57.55 0 1 .45 1 1v3.5c0 .55-.45 1-1 1C10.74 21 3 13.26 3 3.5c0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.12.35.03.75-.24 1.02l-2.2 2.2z"/></svg>
-                                        </a>
-                                        <a :href="`mailto:${lead.email}`" target="_blank" class="hover:text-f59e0b" x-show="lead.email" @click.stop="">
-                                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                        </template>
-                        <tr x-show="paginatedLeads.length === 0">
-                            <td :colspan="tableColumns.length + 1" class="px-6 py-4 text-center text-sm text-gray-500">No leads found.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Pagination -->
-            <nav class="flex items-center justify-between pt-4">
-                <div class="flex-1 flex justify-between sm:hidden">
-                    <button @click="prevPage()" :disabled="currentPage === 1"
-                            class="relative inline-flex items-center px-4 py-2 border border-gray-700 text-sm font-medium rounded-md text-gray-300 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                        Previous
-                    </button>
-                    <button @click="nextPage()" :disabled="currentPage * leadsPerPage >= filteredLeads.length"
-                            class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-700 text-sm font-medium rounded-md text-gray-300 bg-gray-800 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                        Next
-                    </button>
-                </div>
-                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <template x-if="isEditMode">
+                <form class="space-y-4" @submit.prevent="saveLeadChanges()">
                     <div>
-                        <p class="text-sm text-gray-400">
-                            Showing
-                            <span class="font-medium" x-text="(currentPage - 1) * leadsPerPage + 1"></span>
-                            to
-                            <span class="font-medium" x-text="Math.min(currentPage * leadsPerPage, filteredLeads.length)"></span>
-                            of
-                            <span class="font-medium" x-text="filteredLeads.length"></span>
-                            results
-                        </p>
+                        <label for="edit-name" class="block text-sm font-medium text-[#9a9a9a]">Name</label>
+                        <input type="text" id="edit-name" x-model="editedLead.name"
+                               class="mt-1 block w-full bg-[#1e1e2e] border border-[#1e1e2e] rounded-md shadow-sm py-2 px-3 text-[#e2e8f0] focus:outline-none focus:ring-[#f59e0b] focus:border-[#f59e0b]">
                     </div>
                     <div>
-                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                            <button @click="prevPage()" :disabled="currentPage === 1"
-                                    class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-700 bg-gray-800 text-sm font-medium text-gray-300 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                                <span class="sr-only">Previous</span>
-                                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-                                </svg>
-                            </button>
-                            <template x-for="page in totalPages" :key="page">
-                                <button @click="goToPage(page)" aria-current="page"
-                                        class="relative inline-flex items-center px-4 py-2 border text-sm font-medium"
-                                        :class="page === currentPage ? 'z-10 bg-orange-500 border-orange-500 text-white' : 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700'">
-                                    <span x-text="page"></span>
-                                </button>
+                        <label for="edit-status" class="block text-sm font-medium text-[#9a9a9a]">Status</label>
+                        <select id="edit-status" x-model="editedLead.status"
+                                class="mt-1 block w-full bg-[#1e1e2e] border border-[#1e1e2e] rounded-md shadow-sm py-2 px-3 text-[#e2e8f0] focus:outline-none focus:ring-[#f59e0b] focus:border-[#f59e0b]">
+                            <template x-for="s in statusOptions" :key="s.value">
+                                <option :value="s.value" x-text="s.label"></option>
                             </template>
-                            <button @click="nextPage()" :disabled="currentPage * leadsPerPage >= filteredLeads.length"
-                                    class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-700 bg-gray-800 text-sm font-medium text-gray-300 hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed">
-                                <span class="sr-only">Next</span>
-                                <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10l-3.293-3.293a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                                </svg>
-                            </button>
-                        </nav>
+                        </select>
                     </div>
-                </div>
-            </nav>
-        </div>
+                    <div>
+                        <label for="edit-email" class="block text-sm font-medium text-[#9a9a9a]">Email</label>
+                        <input type="email" id="edit-email" x-model="editedLead.email"
+                               class="mt-1 block w-full bg-[#1e1e2e] border border-[#1e1e2e] rounded-md shadow-sm py-2 px-3 text-[#e2e8f0] focus:outline-none focus:ring-[#f59e0b] focus:border-[#f59e0b]">
+                    </div>
+                    <div>
+                        <label for="edit-phone" class="block text-sm font-medium text-[#9a9a9a]">Phone</label>
+                        <input type="text" id="edit-phone" x-model="editedLead.phone"
+                               class="mt-1 block w-full bg-[#1e1e2e] border border-[#1e1e2e] rounded-md shadow-sm py-2 px-3 text-[#e2e8f0] focus:outline-none focus:ring-[#f59e0b] focus:border-[#f59e0b]">
+                    </div>
+                    <div>
+                        <label for="edit-whatsapp" class="block text-sm font-medium text-[#9a9a9a]">WhatsApp ID</label>
+                        <input type="text" id="edit-whatsapp" x-model="editedLead.whatsapp_id"
+                               class="mt-1 block w-full bg-[#1e1e2e] border border-[#1e1e2e] rounded-md shadow-sm py-2 px-3 text-[#e2e8f0] focus:outline-none focus:ring-[#f59e0b] focus:border-[#f59e0b]">
+                    </div>
+                    <div>
+                        <label for="edit-course" class="block text-sm font-medium text-[#9a9a9a]">Course Interest</label>
+                        <input type="text" id="edit-course" x-model="editedLead.course_interest"
+                               class="mt-1 block w-full bg-[#1e1e2e] border border-[#1e1e2e] rounded-md shadow-sm py-2 px-3 text-[#e2e8f0] focus:outline-none focus:ring-[#f59e0b] focus:border-[#f59e0b]">
+                    </div>
+                    <div>
+                        <label for="edit-schedule" class="block text-sm font-medium text-[#9a9a9a]">Preferred Schedule</label>
+                        <input type="text" id="edit-schedule" x-model="editedLead.preferred_schedule"
+                               class="mt-1 block w-full bg-[#1e1e2e] border border-[#1e1e2e] rounded-md shadow-sm py-2 px-3 text-[#e2e8f0] focus:outline-none focus:ring-[#f59e0b] focus:border-[#f59e0b]">
+                    </div>
+                     <div>
+                        <label for="edit-source" class="block text-sm font-medium text-[#9a9a9a]">Source</label>
+                         <input type="text" id="edit-source" x-model="editedLead.source"
+                               class="mt-1 block w-full bg-[#1e1e2e] border border-[#1e1e2e] rounded-md shadow-sm py-2 px-3 text-[#e2e8f0] focus:outline-none focus:ring-[#f59e0b] focus:border-[#f59e0b]">
+                    </div>
+                     <div>
+                        <label for="edit-notes" class="block text-sm font-medium text-[#9a9a9a]">Notes</label>
+                         <textarea id="edit-notes" x-model="editedLead.notes" rows="3"
+                               class="mt-1 block w-full bg-[#1e1e2e] border border-[#1e1e2e] rounded-md shadow-sm py-2 px-3 text-[#e2e8f0] focus:outline-none focus:ring-[#f59e0b] focus:border-[#f59e0b]"></textarea>
+                    </div>
+                </form>
+            </template>
 
-        <!-- Lead Detail Slide-in Panel -->
-        <div x-show="showLeadDetailPanel" class="fixed inset-0 overflow-hidden z-30" style="display: none;">
-            <div class="absolute inset-0 overflow-hidden">
-                <div @click="closeLeadDetail()" class="absolute inset-0 bg-gray-900 bg-opacity-75 transition-opacity"></div>
-                <section class="absolute inset-y-0 right-0 pl-10 max-w-full flex">
-                    <div class="w-screen max-w-md">
-                        <div class="h-full flex flex-col py-6 bg-gray-800 shadow-xl overflow-y-scroll dark-scrollbar">
-                            <div class="px-4 sm:px-6">
-                                <div class="flex items-start justify-between">
-                                    <h2 class="text-lg font-medium text-white" id="slide-over-title">Lead Details</h2>
-                                    <div class="ml-3 h-7 flex items-center">
-                                        <button @click="closeLeadDetail()" class="bg-gray-800 rounded-md text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white">
-                                            <span class="sr-only">Close panel</span>
-                                            <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="mt-6 relative flex-1 px-4 sm:px-6">
-                                <form @submit.prevent="saveLeadDetail()" class="space-y-4">
-                                    <div>
-                                        <label for="name" class="block text-sm font-medium text-gray-300">Name</label>
-                                        <input type="text" x-model="selectedLead.name" id="name" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-orange-500 focus:border-orange-500">
-                                    </div>
-                                    <div>
-                                        <label for="phone" class="block text-sm font-medium text-gray-300">Phone</label>
-                                        <input type="text" x-model="selectedLead.phone" id="phone" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-orange-500 focus:border-orange-500">
-                                    </div>
-                                    <div>
-                                        <label for="email" class="block text-sm font-medium text-gray-300">Email</label>
-                                        <input type="email" x-model="selectedLead.email" id="email" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-orange-500 focus:border-orange-500">
-                                    </div>
-                                    <div>
-                                        <label for="status" class="block text-sm font-medium text-gray-300">Status</label>
-                                        <select x-model="selectedLead.status" id="status" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-orange-500 focus:border-orange-500">
-                                            <template x-for="status in leadStatuses" :key="status.value">
-                                                <option :value="status.value" x-text="status.label"></option>
-                                            </template>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label for="course_interest" class="block text-sm font-medium text-gray-300">Course Interest</label>
-                                        <input type="text" x-model="selectedLead.course_interest" id="course_interest" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-orange-500 focus:border-orange-500">
-                                    </div>
-                                    <div>
-                                        <label for="preferred_schedule" class="block text-sm font-medium text-gray-300">Preferred Schedule</label>
-                                        <input type="text" x-model="selectedLead.preferred_schedule" id="preferred_schedule" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-orange-500 focus:border-orange-500">
-                                    </div>
-                                    <div>
-                                        <label for="source" class="block text-sm font-medium text-gray-300">Source</label>
-                                        <input type="text" x-model="selectedLead.source" id="source" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-orange-500 focus:border-orange-500">
-                                    </div>
-                                    <div>
-                                        <label for="whatsapp_id" class="block text-sm font-medium text-gray-300">WhatsApp ID</label>
-                                        <input type="text" x-model="selectedLead.whatsapp_id" id="whatsapp_id" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-orange-500 focus:border-orange-500">
-                                    </div>
-                                    <div>
-                                        <label for="notes" class="block text-sm font-medium text-gray-300">Notes</label>
-                                        <textarea x-model="selectedLead.notes" id="notes" rows="3" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-orange-500 focus:border-orange-500"></textarea>
-                                    </div>
-                                    <div>
-                                        <p class="text-sm text-gray-300">Created At: <span x-text="formatDate(selectedLead.created_at, true)"></span></p>
-                                        <p class="text-sm text-gray-300">Updated At: <span x-text="formatDate(selectedLead.updated_at, true)"></span></p>
-                                    </div>
-                                    <div class="mt-6">
-                                        <button type="submit" class="accent-bg text-white px-4 py-2 rounded-md font-medium hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-opacity-50">
-                                            Save Changes
-                                        </button>
-                                        <button type="button" @click="closeLeadDetail()" class="ml-3 text-gray-300 px-4 py-2 rounded-md font-medium hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white">
-                                            Cancel
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+            <!-- Activity Timeline (Placeholder) -->
+            <div class="mt-8 pt-6 border-t border-[#1e1e2e]">
+                <h3 class="text-lg font-semibold mb-4">Activity Timeline</h3>
+                <ul class="space-y-4">
+                    <li class="relative pl-6">
+                        <div class="absolute w-2 h-2 bg-[#f59e0b] rounded-full -left-1 top-1.5 ring-4 ring-[#12121a]"></div>
+                        <p class="text-sm text-[#9a9a9a]">Sept 1, 2024</p>
+                        <p>Lead created</p>
+                    </li>
+                    <li class="relative pl-6">
+                        <div class="absolute w-2 h-2 bg-blue-500 rounded-full -left-1 top-1.5 ring-4 ring-[#12121a]"></div>
+                        <p class="text-sm text-[#9a9a9a]">Sept 3, 2024</p>
+                        <p>Contacted via email</p>
+                    </li>
+                </ul>
             </div>
         </div>
-
-        <!-- Add Lead Modal -->
-        <div x-show="showAddLeadModal" class="fixed inset-0 overflow-y-auto z-40" aria-labelledby="modal-title" role="dialog" aria-modal="true" style="display: none;">
-            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div x-show="showAddLeadModal" @click="showAddLeadModal = false" class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
-                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                <div x-show="showAddLeadModal"
-                    class="inline-block align-bottom card rounded-lg text-left overflow-hidden shadow-xl transform sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-                    <div class="px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <div class="sm:flex sm:items-start">
-                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                                <h3 class="text-lg leading-6 font-medium text-white" id="modal-title">Add New Lead</h3>
-                                <div class="mt-4">
-                                    <form @submit.prevent="addNewLead()" class="space-y-4">
-                                        <div>
-                                            <label for="new_name" class="block text-sm font-medium text-gray-300">Name</label>
-                                            <input type="text" x-model="newLead.name" id="new_name" required
-                                                   class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-orange-500 focus:border-orange-500">
-                                        </div>
-                                        <div>
-                                            <label for="new_phone" class="block text-sm font-medium text-gray-300">Phone</label>
-                                            <input type="text" x-model="newLead.phone" id="new_phone"
-                                                   class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-orange-500 focus:border-orange-500">
-                                        </div>
-                                        <div>
-                                            <label for="new_email" class="block text-sm font-medium text-gray-300">Email</label>
-                                            <input type="email" x-model="newLead.email" id="new_email"
-                                                   class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-orange-500 focus:border-orange-500">
-                                        </div>
-                                        <div>
-                                            <label for="new_status" class="block text-sm font-medium text-gray-300">Status</label>
-                                            <select x-model="newLead.status" id="new_status" required
-                                                    class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-orange-500 focus:border-orange-500">
-                                                <template x-for="status in leadStatuses" :key="status.value">
-                                                    <option :value="status.value" x-text="status.label"></option>
-                                                </template>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label for="new_course_interest" class="block text-sm font-medium text-gray-300">Course Interest</label>
-                                            <input type="text" x-model="newLead.course_interest" id="new_course_interest"
-                                                   class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-orange-500 focus:border-orange-500">
-                                        </div>
-                                        <div>
-                                            <label for="new_notes" class="block text-sm font-medium text-gray-300">Notes</label>
-                                            <textarea x-model="newLead.notes" id="new_notes" rows="3"
-                                                      class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm text-white focus:ring-orange-500 focus:border-orange-500"></textarea>
-                                        </div>
-                                        <div class="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse">
-                                            <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 accent-bg text-base font-medium text-white hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm">
-                                                Add Lead
-                                            </button>
-                                            <button type="button" @click="showAddLeadModal = false" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-700 shadow-sm px-4 py-2 bg-gray-800 text-base font-medium text-gray-300 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm">
-                                                Cancel
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </div>
 
+
     <script>
-        // Supabase configuration - values will be replaced by envsubst
-        const SUPABASE_URL = '/api'; // e.g., /api
-        const SUPABASE_ANON_KEY = '${SUPABASE_ANON_KEY}'; // Auth header for Supabase
-
-        // Chart.js global defaults for dark theme
-        Chart.defaults.color = '#e2e8f0'; // text color
-        Chart.defaults.borderColor = '#475569'; // grid/axis line color
-
         document.addEventListener('alpine:init', () => {
             Alpine.data('crmDashboard', () => ({
+                sidebarExpanded: true,
+                activeView: 'dashboard', // 'dashboard', 'leads', 'pipeline', 'analytics', 'settings'
+                isDetailPanelOpen: false,
+                selectedLead: {},
+                isEditMode: false,
+                editedLead: {},
+                loadingLeads: true,
                 leads: [],
-                filteredLeads: [],
-                notifications: [],
-                newNotificationsCount: 0,
-                showNotifications: false,
-                isKanbanView: true,
-                searchTerm: '',
                 filterStatus: '',
                 currentPage: 1,
                 leadsPerPage: 10,
-                selectedLead: null,
-                showLeadDetailPanel: false,
-                showAddLeadModal: false,
-                newLead: {
-                    name: '',
-                    phone: '',
-                    email: '',
-                    course_interest: '',
-                    preferred_schedule: '',
-                    source: 'dashboard',
-                    status: 'new',
-                    whatsapp_id: '',
-                    notes: ''
-                },
-                leadStatuses: [
-                    { value: 'new', label: 'Nuevo' },
-                    { value: 'contacted', label: 'Contactado' },
-                    { value: 'trial_scheduled', label: 'Trial Agendado' },
-                    { value: 'trial_done', label: 'Trial Realizado' },
-                    { value: 'enrolled', label: 'Inscrito' },
-                    { value: 'lost', label: 'Perdido' }
+                sortColumn: 'name',
+                sortDirection: 'asc', // 'asc' or 'desc'
+
+                statusOptions: [
+                    { value: 'new', label: 'Nuevo', color: '#f59e0b' },
+                    { value: 'contacted', label: 'Contactado', color: '#3b82f6' }, // blue-500
+                    { value: 'trial_scheduled', label: 'Trial Agendado', color: '#fbbf24' }, // amber-400
+                    { value: 'trial_done', label: 'Trial Realizado', color: '#16a34a' }, // green-600
+                    { value: 'enrolled', label: 'Inscrito', color: '#22c55e' }, // green-500
+                    { value: 'lost', label: 'Perdido', color: '#ef4444' } // red-500
                 ],
+                
                 tableColumns: [
-                    { key: 'name', label: 'Name' },
-                    { key: 'phone', label: 'Phone' },
-                    { key: 'email', label: 'Email' },
-                    { key: 'status', label: 'Status' },
-                    { key: 'course_interest', label: 'Course Interest' },
-                    { key: 'created_at', label: 'Created At' },
+                     { key: 'name', label: 'Name' },
+                     { key: 'email', label: 'Email' },
+                     { key: 'phone', label: 'Phone' },
+                     { key: 'statusLabel', label: 'Status' },
+                     { key: 'course_interest', label: 'Course' },
+                     { key: 'source', label: 'Source' },
                 ],
-                sortBy: 'created_at',
-                sortDirection: 'desc',
-                stats: {
-                    totalLeads: 0,
-                    newLeadsToday: 0,
-                    conversionRate: '0%',
-                    popularInterest: 'N/A'
-                },
-                leadsPerDayChart: null,
-                pipelineFunnelChart: null,
 
-                init() {
-                    this.fetchLeads();
-                    this.fetchNotifications();
+                async init() {
+                    console.log("CRM Dashboard Alpine component initialized.");
+                    this.pageTitle = this.getPageTitle();
+                    await this.fetchLeads();
+                    this.$watch('activeView', () => this.pageTitle = this.getPageTitle());
                     this.$watch('leads', () => {
-                        this.filterLeads();
-                        this.updateStats();
-                        this.renderCharts();
+                        this.initializeCharts();
                     });
-                    this.$watch('isKanbanView', () => {
-                        if (this.isKanbanView) {
-                            this.$nextTick(() => this.initSortable());
-                        }
-                    });
-                    this.$nextTick(() => {
-                        if (this.isKanbanView) {
-                            this.initSortable();
-                        }
-                    });
+                    this.initializeCharts(); // Initial chart setup
                 },
 
-                async fetchData(endpoint, options = {}) {
+                getPageTitle() {
+                    switch (this.activeView) {
+                        case 'dashboard': return 'Dashboard Overview';
+                        case 'leads': return 'Leads Management';
+                        case 'pipeline': return 'Sales Pipeline';
+                        case 'analytics': return 'CRM Analytics';
+                        case 'settings': return 'CRM Settings';
+                        default: return 'GeneraIA CRM';
+                    }
+                },
+
+                getStatusColor(status) {
+                    const statusObj = this.statusOptions.find(s => s.value === status);
+                    return statusObj ? statusObj.color : '#e2e8f0'; // Default text color
+                },
+
+                async fetchData(url, options = {}) {
+                    const SUPABASE_ANON_KEY = '${SUPABASE_ANON_KEY}';
                     const headers = {
                         'apikey': SUPABASE_ANON_KEY,
                         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
                         'Content-Type': 'application/json',
-                        'Prefer': options.prefer || undefined // e.g., 'count=exact'
+                        ...options.headers
                     };
-
                     try {
-                        const response = await fetch(`/api${endpoint}`, {
-                            ...options,
-                            headers: headers
-                        });
-
+                        const response = await fetch(url, { ...options, headers });
                         if (!response.ok) {
-                            const errorText = await response.text();
-                            console.error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-                            throw new Error(`HTTP error! status: ${response.status}`);
+                            console.error('API Error:', response.status, response.statusText);
+                            // Attempt to parse error as JSON, otherwise return response for status checking
+                            try {
+                                const errorData = await response.json();
+                                console.error('Error details:', errorData);
+                                throw new Error(JSON.stringify(errorData));
+                            } catch (e) {
+                                console.error('Could not parse error JSON, returning response:', response);
+                                throw response; // Return the response object for non-JSON errors
+                            }
                         }
-
-                        // Handle HEAD requests which have no body
-                        if (options.method === 'HEAD') {
-                            return response; // Return the response object for HEAD requests
-                        }
-
-                        // For other methods, assume JSON if Content-Type is application/json
-                        const contentType = response.headers.get("content-type");
-                        if (contentType && contentType.indexOf("application/json") !== -1) {
+                        const contentType = response.headers.get('content-type');
+                        if (contentType && contentType.includes('application/json')) {
                             return await response.json();
                         } else {
-                            return response; // Return response object if not JSON (e.g., 204 No Content)
+                            return response; // Return response object for non-JSON success (e.g., 204 no content)
                         }
-
                     } catch (error) {
                         console.error('Fetch operation failed:', error);
-                        return null;
+                        throw error;
                     }
                 },
 
                 async fetchLeads() {
-                    const data = await this.fetchData('/rest/v1/leads?select=*&order=created_at.desc');
-                    if (data) {
-                        this.leads = data;
-                        console.log('Fetched leads:', this.leads);
+                    this.loadingLeads = true;
+                    try {
+                        const SUPABASE_URL = '/api'; // Fixed as per instructions
+                        const response = await this.fetchData(`${SUPABASE_URL}/rest/v1/leads?select=*`);
+                        if (response instanceof Response) { // Handle non-JSON response from fetchData
+                            const text = await response.text();
+                            console.error('Non-JSON response for leads:', text);
+                            this.leads = [];
+                        } else {
+                             // Map status values to labels
+                            this.leads = response.map(lead => ({
+                                ...lead,
+                                statusLabel: this.statusOptions.find(s => s.value === lead.status)?.label || lead.status,
+                            }));
+                        }
+                    } catch (error) {
+                        console.error("Failed to fetch leads:", error);
+                        this.leads = []; // Ensure leads is an array even on error
+                    } finally {
+                        this.loadingLeads = false;
                     }
                 },
 
-                async fetchNotifications() {
-                    const data = await this.fetchData('/rest/v1/notifications?order=created_at.desc&limit=10');
-                    if (data) {
-                        this.notifications = data;
-                        this.newNotificationsCount = data.filter(n => !n.read).length; // Assuming a 'read' field
-                        console.log('Fetched notifications:', this.notifications);
-                    }
+                openLeadDetail(lead) {
+                    this.selectedLead = { ...lead }; // Deep copy
+                    this.editedLead = { ...lead };
+                    this.isEditMode = false;
+                    this.isDetailPanelOpen = true;
                 },
 
-                filterLeads() {
-                    let tempLeads = this.leads;
-
-                    if (this.searchTerm) {
-                        const lowerSearchTerm = this.searchTerm.toLowerCase();
-                        tempLeads = tempLeads.filter(lead =>
-                            lead.name.toLowerCase().includes(lowerSearchTerm) ||
-                            lead.email.toLowerCase().includes(lowerSearchTerm) ||
-                            lead.phone.toLowerCase().includes(lowerSearchTerm) ||
-                            lead.course_interest.toLowerCase().includes(lowerSearchTerm)
-                        );
-                    }
-
-                    if (this.filterStatus) {
-                        tempLeads = tempLeads.filter(lead => lead.status === this.filterStatus);
-                    }
-
-                    this.filteredLeads = tempLeads;
-                    this.sortLeads(); // Re-apply sort after filtering
-                    this.currentPage = 1; // Reset to first page after filter
+                closeLeadDetail() {
+                    this.isDetailPanelOpen = false;
                 },
 
-                sortLeads() {
-                    this.filteredLeads.sort((a, b) => {
-                        let valA = a[this.sortBy];
-                        let valB = b[this.sortBy];
+                startEditMode() {
+                    this.editedLead = { ...this.selectedLead };
+                    this.isEditMode = true;
+                },
 
-                        // Handle date sorting
-                        if (this.sortBy.endsWith('_at')) {
-                            valA = new Date(valA);
-                            valB = new Date(valB);
+                async saveLeadChanges() {
+                    try {
+                        const SUPABASE_URL = '/api';
+                        const updatedLead = { ...this.editedLead }; // Create a clean copy for sending
+                        updatedLead.updated_at = new Date().toISOString(); // Update timestamp
+
+                        const response = await this.fetchData(`${SUPABASE_URL}/rest/v1/leads?id=eq.${updatedLead.id}`, {
+                            method: 'PATCH',
+                            body: JSON.stringify(updatedLead)
+                        });
+
+                        if (response.status && response.status !== 204) {
+                            throw new Error(`API returned status ${response.status}`);
                         }
 
-                        if (valA < valB) return this.sortDirection === 'asc' ? -1 : 1;
-                        if (valA > valB) return this.sortDirection === 'asc' ? 1 : -1;
+                        // Update the local leads array
+                        const index = this.leads.findIndex(l => l.id === updatedLead.id);
+                        if (index !== -1) {
+                            this.leads[index] = { ...this.leads[index], ...updatedLead, statusLabel: this.statusOptions.find(s => s.value === updatedLead.status)?.label || updatedLead.status };
+                        }
+                        this.selectedLead = { ...updatedLead };
+                        this.isEditMode = false;
+                        this.closeLeadDetail();
+                        await this.fetchLeads(); // Re-fetch to ensure data consistency and chart updates
+                        console.log('Lead updated successfully.');
+                    } catch (error) {
+                        console.error("Failed to update lead:", error);
+                        alert('Failed to update lead. Check console for details.');
+                    }
+                },
+
+                cancelEditMode() {
+                    this.isEditMode = false;
+                    this.editedLead = { ...this.selectedLead }; // Revert changes
+                },
+
+                async deleteLead(leadId) {
+                    if (!confirm('Are you sure you want to delete this lead?')) {
+                        return;
+                    }
+                    try {
+                        const SUPABASE_URL = '/api';
+                        const response = await this.fetchData(`${SUPABASE_URL}/rest/v1/leads?id=eq.${leadId}`, {
+                            method: 'DELETE'
+                        });
+
+                        if (response.status && response.status !== 204) {
+                             throw new Error(`API returned status ${response.status}`);
+                        }
+
+                        this.leads = this.leads.filter(lead => lead.id !== leadId);
+                        this.closeLeadDetail();
+                        console.log('Lead deleted successfully.');
+                    } catch (error) {
+                        console.error("Failed to delete lead:", error);
+                        alert('Failed to delete lead. Check console for details.');
+                    }
+                },
+
+                contactLead(leadId) {
+                    alert(`Contacting lead ${leadId}`); // Placeholder for actual contact logic
+                    // In a real app, this would trigger a modal, call, email, etc.
+                },
+                
+                // Kanban board functionality
+                initializeSortable(statusValue) {
+                    const kanbanEl = document.getElementById('kanban-col-' + statusValue);
+                    if (kanbanEl) {
+                        Sortable.create(kanbanEl, {
+                            group: 'leads',
+                            animation: 150,
+                            dataIdAttr: 'data-id',
+                            onEnd: (evt) => {
+                                const leadId = parseInt(evt.item.dataset.id);
+                                const oldStatus = evt.from.id.replace('kanban-col-', '');
+                                const newStatus = evt.to.id.replace('kanban-col-', '');
+
+                                if (oldStatus !== newStatus) {
+                                    this.updateLeadStatus(leadId, newStatus);
+                                }
+                            }
+                        });
+                    }
+                },
+
+                async updateLeadStatus(leadId, newStatus) {
+                    try {
+                        const SUPABASE_URL = '/api';
+                        const leadToUpdate = this.leads.find(l => l.id === leadId);
+                        if (!leadToUpdate) return;
+
+                        const updatedLead = { ...leadToUpdate, status: newStatus, updated_at: new Date().toISOString() };
+                        const response = await this.fetchData(`${SUPABASE_URL}/rest/v1/leads?id=eq.${leadId}`, {
+                            method: 'PATCH',
+                            body: JSON.stringify({ status: newStatus, updated_at: updatedLead.updated_at })
+                        });
+
+                        if (response.status && response.status !== 204) {
+                             throw new Error(`API returned status ${response.status}`);
+                        }
+
+                        // Update local data
+                        const index = this.leads.findIndex(l => l.id === leadId);
+                        if (index !== -1) {
+                            this.leads[index] = { ...this.leads[index], ...updatedLead, statusLabel: this.statusOptions.find(s => s.value === newStatus)?.label || newStatus };
+                        }
+                        await this.fetchLeads(); // Re-fetch to ensure data consistency and chart updates
+                        console.log(`Lead ${leadId} status updated to ${newStatus}`);
+                    } catch (error) {
+                        console.error(`Failed to update lead ${leadId} status:`, error);
+                        alert('Failed to update lead status. Check console for details.');
+                        // Re-fetch to revert UI changes if API fails
+                        await this.fetchLeads();
+                    }
+                },
+
+                // Computed properties for dashboard stats
+                get totalLeads() {
+                    return this.leads.length;
+                },
+                get newLeadsCount() {
+                    // Example: Leads created in the last 7 days
+                    const sevenDaysAgo = new Date();
+                    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+                    return this.leads.filter(lead => new Date(lead.created_at) > sevenDaysAgo && lead.status === 'new').length;
+                },
+                get enrolledLeadsCount() {
+                    return this.leads.filter(lead => lead.status === 'enrolled').length;
+                },
+                get revenuePotential() {
+                    // Placeholder: simple sum of a hypothetical 'value' field (not in current schema)
+                    // For now, return a fixed value or calculate based on number of 'enrolled' leads
+                    return this.enrolledLeadsCount * 1000; // Example: $1000 per enrolled lead
+                },
+                
+                stats: [
+                    { label: 'Total Leads', value: 0, percentage: '0', trend: 'up', period: 'Last 30 days' },
+                    { label: 'New Leads', value: 0, percentage: '0', trend: 'up', period: 'Last 7 days' },
+                    { label: 'Enrolled', value: 0, percentage: '0', trend: 'up', period: 'Total' },
+                    { label: 'Revenue Potential', value: '$0', percentage: '0', trend: 'up', period: 'Active Pipeline' },
+                ],
+
+                // Initialize charts
+                lineChart: null,
+                doughnutChart: null,
+
+                initializeCharts() {
+                    // Destroy existing charts to prevent duplicates
+                    if (this.lineChart) this.lineChart.destroy();
+                    if (this.doughnutChart) this.doughnutChart.destroy();
+
+                    // Line Chart for Leads Over Time
+                    const createdDates = this.leads.map(lead => new Date(lead.created_at).toLocaleDateString());
+                    const uniqueDates = [...new Set(createdDates)].sort((a, b) => new Date(a) - new Date(b));
+                    const leadsByDate = uniqueDates.map(date => createdDates.filter(d => d === date).length);
+
+                    const lineCtx = document.getElementById('leadsLineChart');
+                    if (lineCtx) {
+                        this.lineChart = new Chart(lineCtx, {
+                            type: 'line',
+                            data: {
+                                labels: uniqueDates,
+                                datasets: [{
+                                    label: 'New Leads',
+                                    data: leadsByDate,
+                                    borderColor: '#f59e0b',
+                                    backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                                    fill: true,
+                                    tension: 0.3
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: { labels: { color: '#e2e8f0' } }
+                                },
+                                scales: {
+                                    x: {
+                                        ticks: { color: '#9a9a9a' },
+                                        grid: { color: '#1e1e2e' }
+                                    },
+                                    y: {
+                                        ticks: { color: '#9a9a9a' },
+                                        grid: { color: '#1e1e2e' },
+                                        beginAtZero: true
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                    // Doughnut Chart for Lead Status Distribution
+                    const statusCounts = {};
+                    this.statusOptions.forEach(s => statusCounts[s.label] = 0); // Initialize all labels to 0
+                    this.leads.forEach(lead => {
+                        const statusLabel = this.statusOptions.find(s => s.value === lead.status)?.label;
+                        if (statusLabel) {
+                            statusCounts[statusLabel] = (statusCounts[statusLabel] || 0) + 1;
+                        }
+                    });
+
+                    const doughnutCtx = document.getElementById('statusDoughnutChart');
+                    if (doughnutCtx) {
+                        this.doughnutChart = new Chart(doughnutCtx, {
+                            type: 'doughnut',
+                            data: {
+                                labels: Object.keys(statusCounts),
+                                datasets: [{
+                                    data: Object.values(statusCounts),
+                                    backgroundColor: this.statusOptions.map(s => s.color),
+                                    hoverOffset: 4
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        position: 'right',
+                                        labels: { color: '#e2e8f0' }
+                                    }
+                                }
+                            }
+                        });
+                    }
+
+                    // Update stats (re-calculate on leads change)
+                    this.stats[0].value = this.totalLeads;
+                    this.stats[0].percentage = ((Math.random() * (15 - 5) + 5).toFixed(1)); // Example random trend
+                    this.stats[0].trend = Math.random() > 0.5 ? 'up' : 'down';
+
+                    this.stats[1].value = this.newLeadsCount;
+                    this.stats[1].percentage = ((Math.random() * (20 - 10) + 10).toFixed(1)); // Example random trend
+                    this.stats[1].trend = Math.random() > 0.5 ? 'up' : 'down';
+
+                    this.stats[2].value = this.enrolledLeadsCount;
+                    this.stats[2].percentage = ((Math.random() * (10 - 2) + 2).toFixed(1)); // Example random trend
+                    this.stats[2].trend = Math.random() > 0.5 ? 'up' : 'down';
+
+                    this.stats[3].value = `$${this.revenuePotential.toLocaleString()}`;
+                    this.stats[3].percentage = ((Math.random() * (30 - 15) + 15).toFixed(1)); // Example random trend
+                    this.stats[3].trend = Math.random() > 0.5 ? 'up' : 'down';
+                },
+
+                // Leads table view pagination and sorting
+                get filteredLeads() {
+                    let filtered = this.leads;
+                    if (this.filterStatus) {
+                        filtered = filtered.filter(lead => lead.status === this.filterStatus);
+                    }
+                    return filtered;
+                },
+
+                get sortedLeads() {
+                    return [...this.filteredLeads].sort((a, b) => {
+                        const aValue = a[this.sortColumn];
+                        const bValue = b[this.sortColumn];
+
+                        if (aValue < bValue) return this.sortDirection === 'asc' ? -1 : 1;
+                        if (aValue > bValue) return this.sortDirection === 'asc' ? 1 : -1;
                         return 0;
                     });
                 },
 
-                sortColumn(columnKey) {
-                    if (this.sortBy === columnKey) {
+                sortByColumn(column) {
+                    if (this.sortColumn === column) {
                         this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
                     } else {
-                        this.sortBy = columnKey;
+                        this.sortColumn = column;
                         this.sortDirection = 'asc';
                     }
-                    this.sortLeads();
                 },
 
                 get paginatedLeads() {
                     const start = (this.currentPage - 1) * this.leadsPerPage;
                     const end = start + this.leadsPerPage;
-                    return this.filteredLeads.slice(start, end);
+                    return this.sortedLeads.slice(start, end);
                 },
 
                 get totalPages() {
                     return Math.ceil(this.filteredLeads.length / this.leadsPerPage);
                 },
 
-                nextPage() {
-                    if (this.currentPage * this.leadsPerPage < this.filteredLeads.length) {
-                        this.currentPage++;
-                    }
+                get firstLeadIndex() {
+                    return (this.currentPage - 1) * this.leadsPerPage + 1;
                 },
 
-                prevPage() {
-                    if (this.currentPage > 1) {
-                        this.currentPage--;
-                    }
+                get lastLeadIndex() {
+                    return Math.min(this.currentPage * this.leadsPerPage, this.filteredLeads.length);
                 },
 
-                goToPage(page) {
-                    this.currentPage = page;
+                // Kanban leads by status
+                get leadsByStatus() {
+                    const grouped = {};
+                    this.statusOptions.forEach(status => {
+                        grouped[status.value] = this.leads.filter(lead => lead.status === status.value);
+                    });
+                    return grouped;
                 },
 
                 exportCSV() {
-                    let csvContent = "data:text/csv;charset=utf-8,";
-                    const headers = this.tableColumns.map(col => col.label).join(',') + ',Whatsapp,Call,Email';
-                    csvContent += headers + String.fromCharCode(10);
+                    if (this.leads.length === 0) {
+                        alert('No leads to export.');
+                        return;
+                    }
 
+                    const headers = [
+                        'id', 'name', 'phone', 'email', 'course_interest',
+                        'preferred_schedule', 'source', 'status', 'whatsapp_id', 'notes',
+                        'created_at', 'updated_at'
+                    ];
+                    const csvRows = [];
+                    csvRows.push(headers.join(',')); // Add header row
 
-                    this.filteredLeads.forEach(lead => {
-                        const row = this.tableColumns.map(col => {
-                            let value = lead[col.key];
-                            if (col.key === 'status') {
-                                value = this.getLabelForStatus(value);
-                            } else if (col.key === 'created_at' || col.key === 'updated_at') {
-                                value = this.formatDate(value);
+                    this.leads.forEach(lead => {
+                        const values = headers.map(header => {
+                            let value = lead[header] !== undefined && lead[header] !== null ? String(lead[header]) : '';
+                            // Escape double quotes by doubling them, and enclose entire field in quotes if it contains comma or double quote
+                            value = value.replace(/"/g, '""');
+                            if (value.includes(',') || value.includes('"') || value.includes(String.fromCharCode(10))) {
+                                value = `"${value}"`;
                             }
-                            return `"${value ? String(value).replace(/"/g, '""') : ''}"`;
-                        }).join(',');
-                        const quickActions = [
-                            `"${lead.whatsapp_id || lead.phone ? `wa.me/${lead.whatsapp_id || lead.phone}` : ''}"`,
-                            `"${lead.phone ? `tel:${lead.phone}` : ''}"`,
-                            `"${lead.email ? `mailto:${lead.email}` : ''}"`
-                        ].join(',');
-                        csvContent += row + ',' + quickActions + String.fromCharCode(10);
+                            return value;
+                        });
+                        csvRows.push(values.join(','));
                     });
 
-                    const encodedUri = encodeURI(csvContent);
-                    const link = document.createElement("a");
-                    link.setAttribute("href", encodedUri);
-                    link.setAttribute("download", "generaia_leads.csv");
+                    const csvString = csvRows.join(String.fromCharCode(10)); // Use String.fromCharCode(10) for newline
+
+                    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.setAttribute('download', 'generaia_leads.csv');
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-                },
-
-                getLabelForStatus(value) {
-                    const status = this.leadStatuses.find(s => s.value === value);
-                    return status ? status.label : value;
-                },
-
-                filteredLeadsByStatus(statusValue) {
-                    return this.filteredLeads.filter(lead => lead.status === statusValue);
-                },
-
-                initSortable() {
-                    this.leadStatuses.forEach(status => {
-                        const el = document.getElementById(`kanban-${status.value}`);
-                        if (el) {
-                            Sortable.create(el, {
-                                group: 'leads',
-                                animation: 150,
-                                ghostClass: 'kanban-card-ghost',
-                                onEnd: (evt) => {
-                                    const leadId = evt.item.dataset.leadId;
-                                    const newStatus = evt.to.dataset.status;
-                                    if (leadId && newStatus) {
-                                        this.updateLeadStatus(leadId, newStatus);
-                                    }
-                                }
-                            });
-                        }
-                    });
-                },
-
-                async updateLeadStatus(leadId, newStatus) {
-                    const leadIndex = this.leads.findIndex(l => l.id === leadId);
-                    if (leadIndex === -1) return;
-
-                    const originalLead = { ...this.leads[leadIndex] };
-                    this.leads[leadIndex].status = newStatus; // Optimistic update
-
-                    const response = await this.fetchData(`/rest/v1/leads?id=eq.${leadId}`, {
-                        method: 'PATCH',
-                        body: JSON.stringify({ status: newStatus })
-                    });
-
-                    if (!response) {
-                        console.error('Failed to update lead status, reverting optimistic update.');
-                        this.leads[leadIndex].status = originalLead.status; // Revert if API call fails
-                        this.fetchLeads(); // Re-fetch to ensure data integrity
-                    } else {
-                        // Trigger re-render by replacing the lead object, keeping arrays immutable
-                        this.leads = this.leads.map(l => l.id === leadId ? { ...l, status: newStatus } : l);
-                    }
-                },
-
-                openLeadDetail(lead) {
-                    this.selectedLead = { ...lead }; // Create a clone to prevent direct modification
-                    this.showLeadDetailPanel = true;
-                },
-
-                closeLeadDetail() {
-                    this.showLeadDetailPanel = false;
-                    this.selectedLead = null;
-                },
-
-                async saveLeadDetail() {
-                    if (!this.selectedLead || !this.selectedLead.id) return;
-
-                    const leadId = this.selectedLead.id;
-                    const updatedData = { ...this.selectedLead };
-                    // Remove id, created_at, updated_at from the payload as they are read-only
-                    delete updatedData.id;
-                    delete updatedData.created_at;
-                    delete updatedData.updated_at;
-
-                    const response = await this.fetchData(`/rest/v1/leads?id=eq.${leadId}`, {
-                        method: 'PATCH',
-                        body: JSON.stringify(updatedData)
-                    });
-
-                    if (response) {
-                        // Update the lead in the main array
-                        this.leads = this.leads.map(lead =>
-                            lead.id === leadId ? { ...lead, ...updatedData, updated_at: new Date().toISOString() } : lead
-                        );
-                        this.closeLeadDetail();
-                        console.log('Lead updated successfully:', leadId);
-                    } else {
-                        console.error('Failed to save lead details.');
-                    }
-                },
-
-                openAddLeadModal() {
-                    this.newLead = { // Reset form
-                        name: '', phone: '', email: '', course_interest: '', preferred_schedule: '',
-                        source: 'dashboard', status: 'new', whatsapp_id: '', notes: ''
-                    };
-                    this.showAddLeadModal = true;
-                },
-
-                async addNewLead() {
-                    const response = await this.fetchData('/rest/v1/leads', {
-                        method: 'POST',
-                        body: JSON.stringify(this.newLead)
-                    });
-
-                    if (response) {
-                        this.showAddLeadModal = false;
-                        this.fetchLeads(); // Re-fetch all leads to include the new one
-                        console.log('New lead added:', response);
-                    } else {
-                        console.error('Failed to add new lead.');
-                    }
-                },
-
-                updateStats() {
-                    this.stats.totalLeads = this.leads.length;
-
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-
-                    this.stats.newLeadsToday = this.leads.filter(lead => {
-                        const leadDate = new Date(lead.created_at);
-                        leadDate.setHours(0, 0, 0, 0);
-                        return leadDate.getTime() === today.getTime();
-                    }).length;
-
-                    const enrolledLeads = this.leads.filter(lead => lead.status === 'enrolled').length;
-                    this.stats.conversionRate = this.stats.totalLeads > 0
-                        ? `${((enrolledLeads / this.stats.totalLeads) * 100).toFixed(2)}%`
-                        : '0%';
-
-                    const courseInterests = this.leads.map(lead => lead.course_interest).filter(Boolean);
-                    if (courseInterests.length > 0) {
-                        const interestCounts = {};
-                        courseInterests.forEach(interest => {
-                            interestCounts[interest] = (interestCounts[interest] || 0) + 1;
-                        });
-                        const sortedInterests = Object.entries(interestCounts).sort(([, a], [, b]) => b - a);
-                        this.stats.popularInterest = sortedInterests[0][0];
-                    } else {
-                        this.stats.popularInterest = 'N/A';
-                    }
-                },
-
-                renderCharts() {
-                    this.renderLeadsPerDayChart();
-                    this.renderPipelineFunnelChart();
-                },
-
-                renderLeadsPerDayChart() {
-                    const leadsPerDay = {};
-                    const last30Days = Array.from({ length: 30 }, (_, i) => {
-                        const d = new Date();
-                        d.setDate(d.getDate() - i);
-                        return d.toISOString().split('T')[0];
-                    }).reverse(); // From 30 days ago to today
-
-                    last30Days.forEach(date => leadsPerDay[date] = 0);
-
-                    this.leads.forEach(lead => {
-                        const date = new Date(lead.created_at).toISOString().split('T')[0];
-                        if (leadsPerDay.hasOwnProperty(date)) {
-                            leadsPerDay[date]++;
-                        }
-                    });
-
-                    const labels = last30Days.map(date => {
-                        const d = new Date(date);
-                        return `${d.getMonth() + 1}/${d.getDate()}`;
-                    });
-                    const data = last30Days.map(date => leadsPerDay[date]);
-
-                    const ctx = document.getElementById('leadsPerDayChart').getContext('2d');
-                    if (this.leadsPerDayChart) {
-                        this.leadsPerDayChart.destroy();
-                    }
-                    this.leadsPerDayChart = new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: labels,
-                            datasets: [{
-                                label: 'New Leads',
-                                data: data,
-                                borderColor: '#f59e0b', // Accent color
-                                backgroundColor: 'rgba(245, 158, 11, 0.2)', // Accent color with transparency
-                                fill: true,
-                                tension: 0.3
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    labels: {
-                                        color: '#e2e8f0'
-                                    }
-                                }
-                            },
-                            scales: {
-                                x: {
-                                    grid: {
-                                        color: '#475569'
-                                    },
-                                    ticks: {
-                                        color: '#e2e8f0'
-                                    }
-                                },
-                                y: {
-                                    beginAtZero: true,
-                                    grid: {
-                                        color: '#475569'
-                                    },
-                                    ticks: {
-                                        color: '#e2e8f0',
-                                        precision: 0
-                                    }
-                                }
-                            }
-                        }
-                    });
-                },
-
-                renderPipelineFunnelChart() {
-                    const statusCounts = {};
-                    this.leadStatuses.forEach(s => statusCounts[s.value] = 0);
-                    this.leads.forEach(lead => {
-                        if (statusCounts.hasOwnProperty(lead.status)) {
-                            statusCounts[lead.status]++;
-                        }
-                    });
-
-                    const labels = this.leadStatuses.map(s => s.label);
-                    const data = this.leadStatuses.map(s => statusCounts[s.value]);
-                    const backgroundColors = [
-                        '#f59e0b', // Accent for 'new'
-                        '#3b82f6', // blue for 'contacted'
-                        '#a855f7', // purple for 'trial_scheduled'
-                        '#22c55e', // green for 'trial_done'
-                        '#14b8a6', // teal for 'enrolled'
-                        '#ef4444'  // red for 'lost'
-                    ];
-
-                    const ctx = document.getElementById('pipelineFunnelChart').getContext('2d');
-                    if (this.pipelineFunnelChart) {
-                        this.pipelineFunnelChart.destroy();
-                    }
-                    this.pipelineFunnelChart = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: labels,
-                            datasets: [{
-                                label: 'Leads by Status',
-                                data: data,
-                                backgroundColor: backgroundColors,
-                                borderColor: backgroundColors,
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    display: false // No need for legend in bar chart if colors are status-specific
-                                }
-                            },
-                            scales: {
-                                x: {
-                                    grid: {
-                                        color: '#475569'
-                                    },
-                                    ticks: {
-                                        color: '#e2e8f0'
-                                    }
-                                },
-                                y: {
-                                    beginAtZero: true,
-                                    grid: {
-                                        color: '#475569'
-                                    },
-                                    ticks: {
-                                        color: '#e2e8f0',
-                                        precision: 0
-                                    }
-                                }
-                            }
-                        }
-                    });
-                },
-
-                formatDate(dateString, includeTime = false) {
-                    if (!dateString) return 'N/A';
-                    const options = { year: 'numeric', month: 'short', day: 'numeric' };
-                    if (includeTime) {
-                        options.hour = '2-digit';
-                        options.minute = '2-digit';
-                        options.second = '2-digit';
-                    }
-                    return new Date(dateString).toLocaleDateString(undefined, options);
                 }
             }));
         });
