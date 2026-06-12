@@ -657,7 +657,9 @@
 
                 exportCSV() {
                     let csvContent = "data:text/csv;charset=utf-8,";
-                    const headers = this.tableColumns.map(col => col.label).join(',') + ',Whatsapp,Call,Email
+                    const headers = this.tableColumns.map(col => col.label).join(',') + ',Whatsapp,Call,Email';
+                    csvContent += headers + String.fromCharCode(10);
+
 ';
                     csvContent += headers;
 
