@@ -1,11 +1,5 @@
 FROM nginx:alpine
-RUN apk add --no-cache gettext
 COPY nginx.conf /etc/nginx/nginx.conf
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-COPY index.html.template /usr/share/nginx/html/index.html.template
+COPY index.html /usr/share/nginx/html/index.html
 EXPOSE 80
-ENTRYPOINT ["/entrypoint.sh"]
-# v3
-# v4
-# v5
+CMD ["nginx", "-g", "daemon off;"]
