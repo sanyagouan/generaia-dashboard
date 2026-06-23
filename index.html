@@ -1,1034 +1,1102 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GeneraIA CRM Dashboard</title>
-    <meta name="description" content="Panel de control CRM de GeneraIA — gestión de leads y clientes">
-    <meta name="theme-color" content="#0f0e0c">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='12' stroke='%23f59e0b' stroke-width='2' fill='none'/><text x='16' y='22' text-anchor='middle' fill='%23f59e0b' font-size='18' font-weight='700' font-family='system-ui'>G</text></svg>">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
-    <style>
-        /* ===================== RESET & BASE ===================== */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        :root {
-            --bg: #0f0e0c;
-            --card: #1a1916;
-            --border: #2a2924;
-            --accent: #f59e0b;
-            --text: #e5e5e5;
-            --muted: #888888;
-            --success: #22c55e;
-            --danger: #ef4444;
-            --info: #3b82f6;
-            --purple: #a855f7;
-            --teal: #14b8a6;
-        }
-        html { scroll-behavior: smooth; }
-        body {
-            font-family: 'DM Sans', system-ui, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            -webkit-font-smoothing: antialiased;
-            line-height: 1.5;
-        }
-        h1, h2, h3, h4, h5 { font-family: 'Space Grotesk', system-ui, sans-serif; }
-        ::selection { background: rgba(245, 158, 11, 0.3); }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeneraIA · CRM</title>
+<style>
+/* =====================================================
+   GeneraIA CRM Dashboard — Single Page App
+   Paleta: ámbar/dorado (#f59e0b, #d97706) sobre oscuro
+   Tipografía: Space Grotesk (cargada inline via woff2)
+   ===================================================== */
 
-        /* ===================== COMPONENTS ===================== */
-        .card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 1.25rem;
-        }
-        .card-hover:hover {
-            border-color: var(--accent);
-            transition: border-color 0.2s;
-        }
-        .glass {
-            background: rgba(26, 25, 22, 0.8);
-            backdrop-filter: blur(12px);
-            border: 1px solid var(--border);
-        }
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 0.875rem;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
-        .btn-primary { background: var(--accent); color: #0f0e0c; }
-        .btn-primary:hover { filter: brightness(1.1); }
-        .btn-secondary { background: var(--border); color: var(--text); }
-        .btn-secondary:hover { background: #3a3934; }
-        .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.8rem; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-danger:hover { filter: brightness(1.2); }
+/* ── Space Grotesk (woff2) ─── */
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('data:application/font-woff2;base64,') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('data:application/font-woff2;base64,') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('data:application/font-woff2;base64,') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Space Grotesk';
+  src: url('data:application/font-woff2;base64,') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+}
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
-        input, select {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 0.5rem 0.75rem;
-            color: var(--text);
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.875rem;
-        }
-        input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; }
-        input::placeholder { color: var(--muted); }
+/* ── Reset & Variables ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg-primary: #0a0a0f;
+  --bg-card: #12121a;
+  --bg-card-hover: #1a1a26;
+  --bg-elevated: #1e1e2e;
+  --border: #2a2a3a;
+  --border-light: #3a3a4a;
+  --text-primary: #e2e8f0;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+  --amber: #f59e0b;
+  --amber-dark: #d97706;
+  --amber-light: #fbbf24;
+  --green: #22c55e;
+  --blue: #3b82f6;
+  --purple: #a855f7;
+  --teal: #14b8a6;
+  --red: #ef4444;
+  --font: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 1px 3px rgba(0,0,0,.3), 0 1px 2px rgba(0,0,0,.2);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,.4), 0 4px 10px rgba(0,0,0,.2);
+}
+html { font-size: 15px; }
+body {
+  font-family: var(--font);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
 
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.2rem 0.6rem;
-            border-radius: 999px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        .badge-new { background: rgba(245, 158, 11, 0.15); color: var(--accent); }
-        .badge-contacted { background: rgba(34, 197, 94, 0.15); color: var(--success); }
-        .badge-qualified { background: rgba(59, 130, 246, 0.15); color: var(--info); }
-        .badge-demo { background: rgba(168, 85, 247, 0.15); color: var(--purple); }
-        .badge-client { background: rgba(20, 184, 166, 0.15); color: var(--teal); }
-        .badge-lost { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+/* ── Scrollbar ─── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-card); }
+::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 
-        table { width: 100%; border-collapse: collapse; }
-        th {
-            text-align: left;
-            padding: 0.75rem 1rem;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--muted);
-            border-bottom: 1px solid var(--border);
-            cursor: pointer;
-            user-select: none;
-        }
-        th:hover { color: var(--text); }
-        td {
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--border);
-            font-size: 0.875rem;
-        }
-        tr:hover td { background: rgba(245, 158, 11, 0.04); }
-        th .sort-arrow { font-size: 0.7rem; margin-left: 0.25rem; }
+/* ── Layout ─── */
+.app { display: flex; height: 100vh; overflow: hidden; }
+.sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--bg-card);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1rem;
+}
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  margin-bottom: 2.5rem;
+  padding: 0 .5rem;
+}
+.sidebar-logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--amber), var(--amber-dark));
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 1.1rem; color: #0a0a0f;
+  flex-shrink: 0;
+}
+.sidebar-logo-text {
+  font-weight: 700; font-size: 1.15rem;
+  letter-spacing: -.02em;
+}
+.sidebar-logo-text span { color: var(--amber); }
 
-        /* ===================== SCROLLBAR ===================== */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg); }
-        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+.sidebar-nav { flex: 1; display: flex; flex-direction: column; gap: .25rem; }
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .65rem .75rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: .9rem;
+  cursor: pointer;
+  transition: all .15s ease;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font);
+}
+.nav-item:hover { background: var(--bg-elevated); color: var(--text-primary); }
+.nav-item.active { background: rgba(245,158,11,.15); color: var(--amber); }
+.nav-item svg { width: 20px; height: 20px; flex-shrink: 0; }
 
-        /* ===================== LAYOUT ===================== */
-        .sidebar { width: 260px; flex-shrink: 0; }
-        .sidebar-link {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            color: var(--muted);
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-        }
-        .sidebar-link:hover { background: rgba(255,255,255,0.04); color: var(--text); }
-        .sidebar-link.active { background: rgba(245, 158, 11, 0.1); color: var(--accent); }
+.sidebar-footer {
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+  font-size: .75rem;
+  color: var(--text-muted);
+  text-align: center;
+}
 
-        .kanban-col {
-            min-width: 240px;
-            max-width: 240px;
-            flex-shrink: 0;
-        }
-        .modal-overlay {
-            position: fixed; inset: 0;
-            background: rgba(0,0,0,0.6);
-            backdrop-filter: blur(4px);
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .modal {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 2rem;
-            width: 100%;
-            max-width: 480px;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-        .detail-panel {
-            position: fixed;
-            right: 0;
-            top: 0;
-            bottom: 0;
-            width: 400px;
-            background: var(--card);
-            border-left: 1px solid var(--border);
-            z-index: 90;
-            padding: 1.5rem;
-            overflow-y: auto;
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-        }
-        .detail-panel.open { transform: translateX(0); }
+/* ── Main ─── */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background: var(--bg-primary);
+}
+.header h1 { font-size: 1.2rem; font-weight: 600; }
+.header-actions { display: flex; align-items: center; gap: .75rem; }
 
-        @media (max-width: 768px) {
-            .sidebar { display: none; }
-            .detail-panel { width: 100%; }
-            .kanban-col { min-width: 200px; max-width: 200px; }
-        }
-    </style>
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+
+/* ── Cards ─── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+
+/* ── Stats Grid ─── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+}
+.stat-label {
+  font-size: .8rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: .35rem;
+}
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--amber);
+  line-height: 1.1;
+}
+.stat-sub {
+  font-size: .8rem;
+  color: var(--text-muted);
+  margin-top: .25rem;
+}
+.stat-breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .75rem;
+  margin-top: .5rem;
+}
+.stat-breakdown-item {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  font-size: .8rem;
+  color: var(--text-secondary);
+}
+.stat-breakdown-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+/* ── Button ─── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  padding: .5rem 1rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-weight: 600;
+  font-size: .85rem;
+  cursor: pointer;
+  transition: all .15s ease;
+  text-decoration: none;
+}
+.btn-primary {
+  background: linear-gradient(135deg, var(--amber), var(--amber-dark));
+  color: #0a0a0f;
+}
+.btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { background: var(--bg-elevated); color: var(--text-primary); }
+.btn-whatsapp {
+  background: #25D366;
+  color: #fff;
+}
+.btn-whatsapp:hover { filter: brightness(1.1); }
+.btn-sm { padding: .35rem .65rem; font-size: .8rem; }
+.btn-xs { padding: .25rem .5rem; font-size: .75rem; }
+
+/* ── Table ─── */
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.table-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .5rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+.table-filters .search-input {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: .45rem .75rem .45rem 2rem;
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: .85rem;
+  width: 200px;
+  outline: none;
+  transition: border .15s;
+}
+.table-filters .search-input:focus { border-color: var(--amber); }
+.search-wrap { position: relative; }
+.search-wrap svg {
+  position: absolute;
+  left: .6rem; top: 50%;
+  transform: translateY(-50%);
+  width: 16px; height: 16px;
+  color: var(--text-muted);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+thead th {
+  padding: .75rem 1rem;
+  text-align: left;
+  font-size: .75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+thead th:hover { color: var(--text-secondary); }
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background .1s;
+}
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--bg-card-hover); }
+tbody td {
+  padding: .7rem 1rem;
+  font-size: .88rem;
+  vertical-align: middle;
+}
+
+/* ── Badge / Status ─── */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .2rem .6rem;
+  border-radius: 100px;
+  font-size: .78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.status-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* ── Source badge ─── */
+.source-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .15rem .5rem;
+  border-radius: 100px;
+  font-size: .75rem;
+  font-weight: 500;
+  background: var(--bg-elevated);
+  color: var(--text-secondary);
+}
+.source-badge.landing { color: var(--amber); }
+.source-badge.whatsapp { color: var(--green); }
+
+/* ── Tiempo transcurrido ─── */
+.time-ago {
+  font-size: .8rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ── Lead Detail Panel ─── */
+.detail-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+  z-index: 50;
+  opacity: 0;
+  visibility: hidden;
+  transition: all .25s ease;
+}
+.detail-overlay.open { opacity: 1; visibility: visible; }
+.detail-panel {
+  position: fixed;
+  top: 0; right: 0;
+  width: 420px;
+  max-width: 100vw;
+  height: 100vh;
+  background: var(--bg-card);
+  border-left: 1px solid var(--border);
+  z-index: 51;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform .3s cubic-bezier(.4,0,.2,1);
+  box-shadow: var(--shadow-lg);
+}
+.detail-panel.open { transform: translateX(0); }
+.detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.detail-header h2 { font-size: 1.1rem; font-weight: 600; }
+.detail-close {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: .3rem;
+  border-radius: 4px;
+  transition: color .15s;
+}
+.detail-close:hover { color: var(--text-primary); }
+.detail-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+}
+.detail-field { margin-bottom: 1rem; }
+.detail-field-label {
+  font-size: .75rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--text-muted);
+  margin-bottom: .2rem;
+}
+.detail-field-value { font-size: .9rem; color: var(--text-primary); }
+.detail-actions {
+  display: flex;
+  gap: .5rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+/* ── Status changer ─── */
+.status-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+  margin-top: .3rem;
+}
+.status-option {
+  padding: .3rem .65rem;
+  border-radius: 100px;
+  font-size: .75rem;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: var(--font);
+  transition: all .15s;
+}
+.status-option:hover { border-color: var(--amber); color: var(--text-primary); }
+.status-option.active { border-color: transparent; color: #0a0a0f; }
+
+/* ── Notes section ─── */
+.notes-area {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: .75rem;
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: .85rem;
+  width: 100%;
+  min-height: 80px;
+  resize: vertical;
+  outline: none;
+  transition: border .15s;
+}
+.notes-area:focus { border-color: var(--amber); }
+
+/* ── Timeline ─── */
+.timeline { position: relative; padding-left: 1.5rem; }
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 4px;
+  bottom: 0;
+  width: 2px;
+  background: var(--border);
+}
+.timeline-item {
+  position: relative;
+  padding-bottom: 1rem;
+}
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-dot {
+  position: absolute;
+  left: -1.5rem;
+  top: 3px;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--bg-card);
+  display: flex; align-items: center; justify-content: center;
+}
+.timeline-dot-inner {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+}
+.timeline-date { font-size: .75rem; color: var(--text-muted); margin-bottom: .15rem; }
+.timeline-text { font-size: .85rem; }
+
+/* ── Toast notifications ─── */
+.toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+.toast {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: .75rem 1rem;
+  font-size: .85rem;
+  color: var(--text-primary);
+  box-shadow: var(--shadow-lg);
+  animation: slideUp .3s ease;
+  max-width: 360px;
+}
+.toast.success { border-left: 3px solid var(--green); }
+.toast.error { border-left: 3px solid var(--red); }
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Empty state ─── */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-muted);
+}
+.empty-state svg { width: 48px; height: 48px; margin-bottom: .75rem; opacity: .5; }
+.empty-state p { font-size: .9rem; }
+
+/* ── Pagination ─── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .75rem 1.25rem;
+  border-top: 1px solid var(--border);
+  font-size: .85rem;
+  color: var(--text-muted);
+}
+.pagination-pages {
+  display: flex;
+  gap: .25rem;
+}
+
+/* ── Loading shimmer ─── */
+.shimmer-row {
+  display: flex;
+  gap: .75rem;
+  padding: .7rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+.shimmer-cell {
+  height: 14px;
+  background: linear-gradient(90deg, var(--bg-card-hover) 25%, var(--bg-elevated) 50%, var(--bg-card-hover) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 3px;
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+/* ── Responsive ─── */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .header { padding: .75rem 1rem; }
+  .content { padding: 1rem; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .table-filters { flex-direction: column; align-items: stretch; }
+  .table-filters .search-input { width: 100%; }
+  .detail-panel { width: 100vw; }
+  table { font-size: .8rem; }
+  thead th, tbody td { padding: .5rem .6rem; }
+}
+</style>
 </head>
 <body>
-<div id="app"></div>
+
+<div class="app" id="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">G</div>
+      <div class="sidebar-logo-text"><span>Genera</span>IA</div>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-view="resumen" onclick="switchView('resumen')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Resumen
+      </button>
+      <button class="nav-item" data-view="leads" onclick="switchView('leads')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Leads
+      </button>
+      <button class="nav-item" data-view="kanban" onclick="switchView('kanban')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        Pipeline
+      </button>
+    </nav>
+    <div class="sidebar-footer">demo.generaia.org</div>
+  </aside>
+
+  <!-- Main area -->
+  <div class="main">
+    <header class="header">
+      <h1 id="pageTitle">GeneraIA · CRM</h1>
+      <div class="header-actions">
+        <button class="btn btn-ghost btn-sm" onclick="refreshData()" title="Actualizar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Sinc.
+        </button>
+        <span id="refreshStatus" style="font-size:.8rem;color:var(--text-muted)"></span>
+      </div>
+    </header>
+
+    <div class="content" id="mainContent">
+      <!-- Views are rendered here by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- Detail Panel -->
+<div class="detail-overlay" id="detailOverlay" onclick="closeDetail()"></div>
+<div class="detail-panel" id="detailPanel">
+  <div class="detail-header">
+    <h2 id="detailTitle">Lead</h2>
+    <button class="detail-close" onclick="closeDetail()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="detail-body" id="detailBody">
+    <!-- Rendered by JS -->
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
 
 <script>
-"use strict";
+/* ==============================================================
+   GeneraIA CRM — Vanilla JS App
+   ============================================================== */
 
-// ===================== STATE =====================
-const API_BASE = '/rest/v1';
+const API = '/rest/v1';
 
-const state = {
-    view: 'dashboard',
-    leads: [],
-    stats: { total: 0, newToday: 0, new: 0, contacted: 0, qualified: 0, demo: 0, client: 0, lost: 0, conversion: 0 },
-    sort: { field: 'created_at', dir: 'desc' },
-    search: '',
-    filterStatus: '',
-    selectedLead: null,
-    showNewLeadModal: false,
-    showEditModal: false,
-    showDeleteConfirm: false,
-    leadsOverTime: [],
-    statusDistribution: [],
-    topSources: [],
-    recentActivities: [],
+// ─── State ───
+let state = {
+  leads: [],
+  currentView: 'resumen',
+  currentPage: 1,
+  perPage: 20,
+  searchTerm: '',
+  filterStatus: '',
+  sortCol: 'created_at',
+  sortDir: 'desc',
+  selectedLead: null,
+  loading: true,
+  refreshInterval: null
 };
 
-// ===================== STATUS CONFIG =====================
-const STATUSES = [
-    { key: 'new',        label: 'Nuevo',       color: 'badge-new' },
-    { key: 'contacted',  label: 'Contactado',  color: 'badge-contacted' },
-    { key: 'qualified',  label: 'Calificado',  color: 'badge-qualified' },
-    { key: 'demo',       label: 'Demo',        color: 'badge-demo' },
-    { key: 'client',     label: 'Cliente',     color: 'badge-client' },
-    { key: 'lost',       label: 'Perdido',     color: 'badge-lost' },
-];
+// ─── Status mapping ───
+const STATUS_MAP = {
+  new:              { label: 'Nuevo',         color: '#f59e0b', bg: 'rgba(245,158,11,.15)' },
+  contacted:        { label: 'Contactado',    color: '#3b82f6', bg: 'rgba(59,130,246,.15)' },
+  trial_scheduled:  { label: 'Demo agendada', color: '#a855f7', bg: 'rgba(168,85,247,.15)' },
+  trial_done:       { label: 'Demo hecha',    color: '#14b8a6', bg: 'rgba(20,184,166,.15)' },
+  enrolled:         { label: 'Cerrado',       color: '#22c55e', bg: 'rgba(34,197,94,.15)' },
+  lost:             { label: 'Perdido',       color: '#ef4444', bg: 'rgba(239,68,68,.15)' }
+};
+const STATUS_ORDER = ['new','contacted','trial_scheduled','trial_done','enrolled','lost'];
+const STATUS_LABELS = { new:'Nuevo', contacted:'Contactado', trial_scheduled:'Demo agendada', trial_done:'Demo hecha', enrolled:'Cerrado', lost:'Perdido' };
 
-function statusLabel(key) {
-    const s = STATUSES.find(s => s.key === key);
-    return s ? s.label : key;
+// ─── Helpers ───
+function $(id) { return document.getElementById(id); }
+function esc(s) {
+  if (s == null) return '';
+  const d = document.createElement('div');
+  d.textContent = String(s);
+  return d.innerHTML;
 }
 
-function statusBadge(key) {
-    const s = STATUSES.find(s => s.key === key);
-    return s ? s.color : 'badge-new';
+function timeAgo(dateStr) {
+  if (!dateStr) return '—';
+  const now = Date.now();
+  const d = new Date(dateStr).getTime();
+  const diff = Math.max(0, now - d);
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'Ahora';
+  if (mins < 60) return `Hace ${mins}m`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `Hace ${hrs}h`;
+  const days = Math.floor(hrs / 24);
+  if (days < 30) return `Hace ${days}d`;
+  return new Date(dateStr).toLocaleDateString('es-ES', { day:'numeric', month:'short' });
 }
 
-// ===================== API =====================
-async function apiGet(path) {
-    const r = await fetch(`${API_BASE}/${path}`);
-    if (!r.ok) throw new Error(`API ${r.status}: ${await r.text()}`);
-    return r.json();
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleDateString('es-ES', { day:'2-digit', month:'short', year:'numeric' });
 }
 
-async function apiPost(path, data) {
-    const r = await fetch(`${API_BASE}/${path}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
-        body: JSON.stringify(data),
-    });
-    if (!r.ok) throw new Error(`API ${r.status}: ${await r.text()}`);
-    return r.json();
+function statusBadgeHTML(status) {
+  const s = STATUS_MAP[status] || { label: status, color: '#9ca3af', bg: 'rgba(156,163,175,.1)' };
+  return `<span class="status-badge" style="background:${s.bg};color:${s.color}"><span class="status-dot" style="background:${s.color}"></span>${esc(s.label)}</span>`;
 }
 
-async function apiPatch(path, data) {
-    const r = await fetch(`${API_BASE}/${path}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
-        body: JSON.stringify(data),
-    });
-    if (!r.ok) throw new Error(`API ${r.status}: ${await r.text()}`);
-    return r.json();
+function sourceBadgeHTML(source) {
+  const isLanding = source === 'landing-chat' || source === 'landing';
+  const label = isLanding ? 'Landing' : (source === 'whatsapp' ? 'WhatsApp' : esc(source || '—'));
+  const cls = isLanding ? 'landing' : (source === 'whatsapp' ? 'whatsapp' : '');
+  return `<span class="source-badge ${cls}">${label}</span>`;
 }
 
-async function apiDelete(path) {
-    const r = await fetch(`${API_BASE}/${path}`, { method: 'DELETE' });
-    if (!r.ok) throw new Error(`API ${r.status}: ${await r.text()}`);
-    return true;
+function phoneLink(phone) {
+  if (!phone) return '—';
+  const cleaned = String(phone).replace(/[^0-9]/g, '');
+  const display = cleaned.length >= 9 ? cleaned.slice(-9) : cleaned;
+  const wa = cleaned.startsWith('34') ? cleaned : '34' + cleaned;
+  return `<a href="https://wa.me/${wa}" target="_blank" rel="noopener" style="color:var(--amber);text-decoration:none;font-weight:500" title="Abrir WhatsApp">${display}</a>`;
 }
 
-// ===================== DATA LOADING =====================
-async function loadLeads() {
-    try {
-        let q = 'leads?order=created_at.desc&limit=200';
-        state.leads = await apiGet(q);
-        computeStats();
-        render();
-    } catch (e) {
-        console.error('Failed to load leads:', e);
-        document.getElementById('app').innerHTML = `<div class="flex items-center justify-center min-h-screen"><div class="text-center"><p class="text-4xl mb-4">⚠️</p><p class="text-muted">No se pudieron cargar los leads.</p><p class="text-sm text-muted mt-2">${e.message}</p></div></div>`;
+function toast(msg, type = 'success') {
+  const c = $('toastContainer');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  c.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.remove(), 300); }, 3000);
+}
+
+// ─── View Switching ───
+function switchView(view) {
+  state.currentView = view;
+  state.currentPage = 1;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.view === view));
+  $('pageTitle').textContent = view === 'resumen' ? 'GeneraIA · CRM — Resumen' : view === 'leads' ? 'GeneraIA · CRM — Leads' : 'GeneraIA · CRM — Pipeline';
+  render();
+}
+
+// ─── API Calls ───
+async function apiFetch(endpoint, opts = {}) {
+  const url = API + endpoint;
+  const headers = { 'Accept': 'application/json', 'Content-Type': 'application/json', ...opts.headers };
+  try {
+    const res = await fetch(url, { ...opts, headers });
+    if (!res.ok) {
+      let msg = `HTTP ${res.status}`;
+      try { const j = await res.json(); msg = j.message || j.details || msg; } catch(e) {}
+      throw new Error(msg);
     }
+    if (opts.method === 'HEAD') return res;
+    return await res.json();
+  } catch(e) {
+    console.error('API Error:', e);
+    throw e;
+  }
 }
 
-function computeStats() {
-    const leads = state.leads;
-    const today = new Date().toISOString().split('T')[0];
-
-    state.stats = {
-        total: leads.length,
-        newToday: leads.filter(l => l.created_at && l.created_at.startsWith(today)).length,
-        new: leads.filter(l => l.status === 'new').length,
-        contacted: leads.filter(l => l.status === 'contacted').length,
-        qualified: leads.filter(l => l.status === 'qualified').length,
-        demo: leads.filter(l => l.status === 'demo').length,
-        client: leads.filter(l => l.status === 'client').length,
-        lost: leads.filter(l => l.status === 'lost').length,
-        conversion: leads.length > 0
-            ? Math.round((leads.filter(l => l.status === 'client').length / leads.length) * 100)
-            : 0,
-        mostPopularSource: getMostPopular(leads.map(l => l.source || 'whatsapp')),
-    };
-
-    // Leads Over Time (last 7 days)
-    const days = [];
-    for (let i = 6; i >= 0; i--) {
-        const d = new Date(); d.setDate(d.getDate() - i);
-        const dayStr = d.toISOString().split('T')[0];
-        const count = leads.filter(l => l.created_at && l.created_at.startsWith(dayStr)).length;
-        days.push({ date: dayStr, count });
-    }
-    state.leadsOverTime = days;
-
-    // Status Distribution
-    state.statusDistribution = STATUSES.map(s => ({
-        label: s.label,
-        count: leads.filter(l => l.status === s.key).length,
-        key: s.key,
-    }));
-
-    // Top Sources
-    const sourceMap = {};
-    leads.forEach(l => {
-        const src = l.source || 'whatsapp';
-        sourceMap[src] = (sourceMap[src] || 0) + 1;
-    });
-    state.topSources = Object.entries(sourceMap)
-        .map(([source, count]) => ({ source, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 5);
-
-    // Recent Activities
-    state.recentActivities = leads
-        .filter(l => l.created_at)
-        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-        .slice(0, 10)
-        .map(l => ({
-            name: l.name || '(sin nombre)',
-            status: l.status || 'new',
-            type: l.source || 'whatsapp',
-            time: l.created_at,
-        }));
-}
-
-// ===================== HELPERS =====================
-function getMostPopular(arr) {
-    const m = {};
-    arr.forEach(x => { m[x] = (m[x] || 0) + 1; });
-    return Object.entries(m).sort((a, b) => b[1] - a[1])[0]?.[0] || '—';
-}
-
-function getLeadsFiltered() {
-    let filtered = [...state.leads];
-    if (state.search) {
-        const q = state.search.toLowerCase();
-        filtered = filtered.filter(l =>
-            (l.name || '').toLowerCase().includes(q) ||
-            (l.phone || '').includes(q) ||
-            (l.email || '').toLowerCase().includes(q) ||
-            (l.course_interest || l.business_type || '').toLowerCase().includes(q)
-        );
-    }
-    if (state.filterStatus) {
-        filtered = filtered.filter(l => l.status === state.filterStatus);
-    }
-    const { field, dir } = state.sort;
-    filtered.sort((a, b) => {
-        let va = a[field] || '', vb = b[field] || '';
-        if (field === 'created_at') { va = new Date(va); vb = new Date(vb); }
-        else if (typeof va === 'string') { va = va.toLowerCase(); vb = vb.toLowerCase(); }
-        return dir === 'asc' ? (va > vb ? 1 : -1) : (va < vb ? 1 : -1);
-    });
-    return filtered;
-}
-
-function toggleSort(field) {
-    if (state.sort.field === field) {
-        state.sort.dir = state.sort.dir === 'asc' ? 'desc' : 'asc';
-    } else {
-        state.sort.field = field;
-        state.sort.dir = 'desc';
-    }
+async function fetchLeads() {
+  let endpoint = '/leads?order=created_at.desc';
+  const filters = [];
+  if (state.filterStatus) filters.push(`status=eq.${state.filterStatus}`);
+  if (state.searchTerm) {
+    const t = encodeURIComponent('%' + state.searchTerm + '%');
+    filters.push(`or=(name.ilike.${t},phone.ilike.${t},email.ilike.${t},business_type.ilike.${t},source.ilike.${t},notes.ilike.${t})`);
+  }
+  if (filters.length) endpoint += '&' + filters.join('&');
+  $('refreshStatus').textContent = 'Actualizando…';
+  try {
+    const data = await apiFetch(endpoint);
+    state.leads = data || [];
+    state.loading = false;
+    $('refreshStatus').textContent = `✓ ${new Date().toLocaleTimeString('es-ES')}`;
     render();
+  } catch(e) {
+    state.loading = false;
+    $('refreshStatus').textContent = '✗ Error';
+    toast('Error al cargar leads: ' + e.message, 'error');
+    render();
+  }
 }
 
-// ===================== MODAL CRUD =====================
-function openNewLead() { state.selectedLead = {}; state.showNewLeadModal = true; render(); }
-function closeNewLead() { state.showNewLeadModal = false; state.selectedLead = null; render(); }
-
-async function saveNewLead() {
-    const data = state.selectedLead;
-    if (!data.name || !data.phone) return alert('Nombre y teléfono son obligatorios');
-    try {
-        await apiPost('leads', {
-            name: data.name,
-            phone: data.phone,
-            email: data.email || '',
-            course_interest: data.interest || '',
-            preferred_schedule: data.schedule || '',
-            source: data.source || 'manual',
-            status: 'new',
-            business_type: data.business_type || '',
-            problem_description: data.problem || '',
-        });
-        closeNewLead();
-        await loadLeads();
-    } catch (e) { alert('Error: ' + e.message); }
+async function patchLead(id, payload) {
+  try {
+    await apiFetch(`/leads?id=eq.${id}`, { method: 'PATCH', body: JSON.stringify(payload) });
+    return true;
+  } catch(e) {
+    toast('Error al actualizar: ' + e.message, 'error');
+    return false;
+  }
 }
 
-function openEdit(lead) { state.selectedLead = { ...lead, interest: lead.course_interest || lead.business_type || '' }; state.showEditModal = true; render(); }
-function closeEdit() { state.showEditModal = false; state.selectedLead = null; render(); }
-
-async function saveEdit() {
-    const d = state.selectedLead;
-    if (!d.id) return;
-    try {
-        await apiPatch(`leads?id=eq.${d.id}`, {
-            name: d.name,
-            phone: d.phone,
-            email: d.email || '',
-            course_interest: d.interest || '',
-            business_type: d.business_type || '',
-            problem_description: d.problem || '',
-            status: d.status,
-        });
-        closeEdit();
-        await loadLeads();
-    } catch (e) { alert('Error: ' + e.message); }
+async function changeStatus(leadId, newStatus) {
+  if (!leadId) return;
+  const ok = await patchLead(leadId, { status: newStatus });
+  if (ok) {
+    const lead = state.leads.find(l => l.id === leadId);
+    if (lead) lead.status = newStatus;
+    if (state.selectedLead && state.selectedLead.id === leadId) state.selectedLead.status = newStatus;
+    render();
+    toast(`Estado actualizado a «${STATUS_LABELS[newStatus] || newStatus}»`);
+  }
 }
 
-function confirmDelete(lead) { state.selectedLead = lead; state.showDeleteConfirm = true; render(); }
-function cancelDelete() { state.showDeleteConfirm = false; state.selectedLead = null; render(); }
-
-async function doDelete() {
-    if (!state.selectedLead?.id) return;
-    try {
-        await apiDelete(`leads?id=eq.${state.selectedLead.id}`);
-        state.showDeleteConfirm = false;
-        state.selectedLead = null;
-        await loadLeads();
-    } catch (e) { alert('Error: ' + e.message); }
+async function saveNotes(leadId, notes) {
+  if (!leadId) return;
+  const ok = await patchLead(leadId, { notes });
+  if (ok) {
+    const lead = state.leads.find(l => l.id === leadId);
+    if (lead) lead.notes = notes;
+    if (state.selectedLead && state.selectedLead.id === leadId) state.selectedLead.notes = notes;
+    toast('Notas guardadas');
+  }
 }
 
-async function updateStatus(leadId, newStatus) {
-    try {
-        await apiPatch(`leads?id=eq.${leadId}`, { status: newStatus });
-        await loadLeads();
-    } catch (e) { console.error('Status update failed:', e); }
+// ─── Detail Panel ───
+function openDetail(lead) {
+  if (!lead) return;
+  state.selectedLead = { ...lead };
+  renderDetail();
+  $('detailOverlay').classList.add('open');
+  $('detailPanel').classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
-// ===================== CHARTS (Canvas) =====================
-function drawBarChart(canvasId, labels, data, color) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
-    const w = rect.width, h = rect.height;
-    const pad = { top: 20, bottom: 30, left: 5, right: 5 };
-    const chartW = w - pad.left - pad.right;
-    const chartH = h - pad.top - pad.bottom;
-    const maxVal = Math.max(...data, 1);
-    const barW = Math.min(chartW / data.length * 0.6, 40);
-
-    ctx.clearRect(0, 0, w, h);
-
-    data.forEach((val, i) => {
-        const x = pad.left + (i + 0.5) * (chartW / data.length) - barW / 2;
-        const barH = (val / maxVal) * chartH;
-        const y = pad.top + chartH - barH;
-
-        // Bar
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        ctx.roundRect(x, y, barW, barH, [4, 4, 0, 0]);
-        ctx.fill();
-
-        // Label
-        ctx.fillStyle = '#888';
-        ctx.font = '10px DM Sans';
-        ctx.textAlign = 'center';
-        ctx.fillText(labels[i]?.substring(5) || '', pad.left + (i + 0.5) * (chartW / data.length), h - 8);
-
-        // Value
-        ctx.fillStyle = '#e5e5e5';
-        ctx.font = 'bold 11px DM Sans';
-        ctx.fillText(val.toString(), pad.left + (i + 0.5) * (chartW / data.length), y - 6);
-    });
+function closeDetail() {
+  $('detailOverlay').classList.remove('open');
+  $('detailPanel').classList.remove('open');
+  document.body.style.overflow = '';
+  state.selectedLead = null;
 }
 
-function drawDoughnut(canvasId, labels, data, colors) {
-    const canvas = document.getElementById(canvasId);
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
-    const w = rect.width, h = rect.height;
-    const cx = w / 2, cy = h / 2;
-    const outerR = Math.min(w, h) * 0.4;
-    const innerR = outerR * 0.55;
-    const total = data.reduce((a, b) => a + b, 0) || 1;
+function renderDetail() {
+  const l = state.selectedLead;
+  if (!l) return;
+  $('detailTitle').textContent = esc(l.name);
 
-    let startAngle = -Math.PI / 2;
-    data.forEach((val, i) => {
-        if (val === 0) return;
-        const slice = (val / total) * Math.PI * 2;
-        ctx.beginPath();
-        ctx.arc(cx, cy, outerR, startAngle, startAngle + slice);
-        ctx.arc(cx, cy, innerR, startAngle + slice, startAngle, true);
-        ctx.closePath();
-        ctx.fillStyle = colors[i % colors.length];
-        ctx.fill();
-        startAngle += slice;
-    });
+  let html = `<div class="detail-actions">
+    <a href="https://wa.me/${(l.phone||'').replace(/[^0-9]/g,'').startsWith('34') ? (l.phone||'').replace(/[^0-9]/g,'') : '34'+(l.phone||'').replace(/[^0-9]/g,'')}" target="_blank" rel="noopener" class="btn btn-whatsapp btn-sm">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      WhatsApp
+    </a>
+  </div>`;
 
-    // Center text
-    ctx.fillStyle = '#e5e5e5';
-    ctx.font = 'bold 20px Space Grotesk';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(total.toString(), cx, cy - 6);
-    ctx.fillStyle = '#888';
-    ctx.font = '11px DM Sans';
-    ctx.fillText('total', cx, cy + 14);
+  // Status changer
+  html += `<div class="detail-field"><div class="detail-field-label">Estado</div>
+    <div class="status-selector">`;
+  STATUS_ORDER.forEach(s => {
+    const info = STATUS_MAP[s];
+    const active = l.status === s;
+    html += `<button class="status-option${active ? ' active' : ''}" style="${active ? `background:${info.color};border-color:${info.color}` : ''}" onclick="changeStatus(${l.id},'${s}')">${esc(info.label)}</button>`;
+  });
+  html += `</div></div>`;
+
+  // Fields
+  const fields = [
+    { label: 'Teléfono', value: phoneLink(l.phone) },
+    { label: 'Email', value: l.email ? `<a href="mailto:${esc(l.email)}" style="color:var(--amber);text-decoration:none">${esc(l.email)}</a>` : '—' },
+    { label: 'Negocio', value: esc(l.business_type || '—') },
+    { label: 'Fuente', value: sourceBadgeHTML(l.source) },
+    { label: 'Creado', value: formatDate(l.created_at) },
+    { label: 'Actualizado', value: formatDate(l.updated_at) }
+  ];
+  fields.forEach(f => {
+    html += `<div class="detail-field"><div class="detail-field-label">${esc(f.label)}</div><div class="detail-field-value">${f.value}</div></div>`;
+  });
+
+  // Notes
+  html += `<div class="detail-field"><div class="detail-field-label">Notas</div>
+    <textarea class="notes-area" id="notesTextarea" onchange="saveNotes(${l.id}, this.value)">${esc(l.notes || '')}</textarea>
+    <div style="font-size:.7rem;color:var(--text-muted);margin-top:.25rem">Las notas se guardan automáticamente al perder el foco.</div>
+  </div>`;
+
+  // Timeline (simulated from created_at and updated_at)
+  html += `<div class="detail-field" style="margin-top:1.5rem"><div class="detail-field-label">Historial</div>
+    <div class="timeline">`;
+  if (l.created_at) {
+    html += `<div class="timeline-item">
+      <div class="timeline-dot"><div class="timeline-dot-inner" style="background:var(--amber)"></div></div>
+      <div class="timeline-date">${formatDate(l.created_at)}</div>
+      <div class="timeline-text">Lead creado · Estado: <strong>${esc(STATUS_LABELS[l.status] || l.status)}</strong></div>
+    </div>`;
+  }
+  if (l.updated_at && l.updated_at !== l.created_at) {
+    html += `<div class="timeline-item">
+      <div class="timeline-dot"><div class="timeline-dot-inner" style="background:var(--blue)"></div></div>
+      <div class="timeline-date">${formatDate(l.updated_at)}</div>
+      <div class="timeline-text">Última actualización</div>
+    </div>`;
+  }
+  html += `</div></div>`;
+
+  $('detailBody').innerHTML = html;
 }
 
-function drawCharts() {
-    setTimeout(() => {
-        // Leads Over Time
-        if (state.leadsOverTime.length) {
-            drawBarChart('chart-leads-time',
-                state.leadsOverTime.map(d => d.date),
-                state.leadsOverTime.map(d => d.count),
-                '#f59e0b'
-            );
-        }
-
-        // Status Distribution
-        if (state.statusDistribution.length) {
-            const colors = ['#f59e0b', '#22c55e', '#3b82f6', '#a855f7', '#14b8a6', '#ef4444'];
-            drawDoughnut('chart-status',
-                state.statusDistribution.map(s => s.label),
-                state.statusDistribution.map(s => s.count),
-                colors
-            );
-        }
-    }, 50);
-}
-
-// ===================== RENDER =====================
-function h(tag, attrs, ...children) {
-    const el = document.createElement(tag);
-    if (attrs) Object.entries(attrs).forEach(([k, v]) => {
-        if (k === 'className') el.className = v;
-        else if (k.startsWith('on')) el.addEventListener(k.slice(2).toLowerCase(), v);
-        else if (k === 'style' && typeof v === 'object') Object.assign(el.style, v);
-        else el.setAttribute(k, v);
-    });
-    children.forEach(c => {
-        if (typeof c === 'string') el.appendChild(document.createTextNode(c));
-        else if (c instanceof Node) el.appendChild(c);
-    });
-    return el;
-}
-
+// ─── Render Views ───
 function render() {
-    const app = document.getElementById('app');
-    app.innerHTML = '';
-
-    const container = h('div', { style: 'display:flex;height:100vh;overflow:hidden;' });
-
-    // ===== SIDEBAR =====
-    const sidebar = h('div', { className: 'sidebar', style: 'background:#1a1916;border-right:1px solid #2a2924;display:flex;flex-direction:column;padding:1.25rem;' });
-
-    const logo = h('div', { style: 'display:flex;align-items:center;gap:0.5rem;margin-bottom:2rem;padding:0 0.5rem;' });
-    const logoSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    logoSvg.setAttribute('width', '28'); logoSvg.setAttribute('height', '28'); logoSvg.setAttribute('viewBox', '0 0 32 32');
-    logoSvg.innerHTML = '<circle cx="16" cy="16" r="12" stroke="#f59e0b" stroke-width="2" fill="none"/><text x="16" y="22" text-anchor="middle" fill="#f59e0b" font-size="18" font-weight="700" font-family="Space Grotesk, sans-serif">G</text>';
-    logo.appendChild(logoSvg);
-    const logoTxt = h('span', { style: 'font-weight:700;font-size:1.1rem;font-family:Space Grotesk,sans-serif;' });
-    logoTxt.innerHTML = 'Genera<span style="color:#f59e0b">IA</span>';
-    logo.appendChild(logoTxt);
-    sidebar.appendChild(logo);
-
-    const nav = h('nav', { style: 'display:flex;flex-direction:column;gap:0.25rem;flex:1;' });
-    const navItems = [
-        { key: 'dashboard', icon: '📊', label: 'Dashboard' },
-        { key: 'leads', icon: '👥', label: 'Leads' },
-        { key: 'pipeline', icon: '🔄', label: 'Pipeline' },
-        { key: 'analytics', icon: '📈', label: 'Analytics' },
-    ];
-    navItems.forEach(item => {
-        const link = h('a', { className: `sidebar-link ${state.view === item.key ? 'active' : ''}`, href: '#', onClick: e => { e.preventDefault(); state.view = item.key; render(); if (state.view === 'dashboard') drawCharts(); } });
-        link.innerHTML = `<span>${item.icon}</span><span>${item.label}</span>`;
-        nav.appendChild(link);
-    });
-    sidebar.appendChild(nav);
-
-    const sidebarFooter = h('div', { style: 'padding-top:1rem;border-top:1px solid #2a2924;' });
-    const ctaLink = h('a', { href: 'https://wa.me/34681072103', target: '_blank', style: 'display:flex;align-items:center;gap:0.5rem;color:#888;font-size:0.8rem;text-decoration:none;' });
-    ctaLink.innerHTML = '<span>💬</span><span>Soporte WhatsApp</span>';
-    sidebarFooter.appendChild(ctaLink);
-    sidebar.appendChild(sidebarFooter);
-
-    container.appendChild(sidebar);
-
-    // ===== MAIN CONTENT =====
-    const main = h('div', { style: 'flex:1;display:flex;flex-direction:column;overflow:hidden;' });
-
-    // Header
-    const header = h('header', { className: 'glass', style: 'display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1.5rem;border-bottom:1px solid #2a2924;flex-shrink:0;' });
-    const headerTitle = h('h1', { style: 'font-size:1.25rem;' });
-    headerTitle.textContent = {
-        dashboard: 'Dashboard Overview',
-        leads: 'Gestión de Leads',
-        pipeline: 'Pipeline de Ventas',
-        analytics: 'Analíticas',
-    }[state.view] || 'Dashboard';
-    header.appendChild(headerTitle);
-
-    const headerActions = h('div', { style: 'display:flex;align-items:center;gap:0.75rem;' });
-    if (state.view !== 'analytics') {
-        const searchInput = h('input', { type: 'text', placeholder: 'Buscar...', value: state.search, onInput: e => { state.search = e.target.value; render(); } });
-        headerActions.appendChild(searchInput);
-    }
-    if (state.view !== 'analytics') {
-        const newBtn = h('button', { className: 'btn btn-primary btn-sm', onClick: openNewLead });
-        newBtn.innerHTML = '+ Nuevo Lead';
-        headerActions.appendChild(newBtn);
-    }
-    header.appendChild(headerActions);
-    main.appendChild(header);
-
-    // ===== BODY =====
-    const body = h('div', { style: 'flex:1;overflow-y:auto;padding:1.5rem;' });
-
-    if (state.view === 'dashboard') renderDashboard(body);
-    else if (state.view === 'leads') renderLeads(body);
-    else if (state.view === 'pipeline') renderPipeline(body);
-    else if (state.view === 'analytics') renderAnalytics(body);
-
-    main.appendChild(body);
-    container.appendChild(main);
-    app.appendChild(container);
-
-    // Render charts after DOM is ready
-    if (state.view === 'dashboard' || state.view === 'analytics') drawCharts();
+  if (state.currentView === 'resumen') return renderResumen();
+  if (state.currentView === 'leads') return renderLeads();
+  if (state.currentView === 'kanban') return renderKanban();
 }
 
-// ===================== VIEWS =====================
-function renderDashboard(container) {
-    const s = state.stats;
+function renderResumen() {
+  const leads = state.leads;
+  const total = leads.length;
+  const nuevos = leads.filter(l => l.status === 'new').length;
+  const enSeguimiento = leads.filter(l => ['contacted','trial_scheduled','trial_done'].includes(l.status)).length;
+  const cerrados = leads.filter(l => l.status === 'enrolled').length;
+  const perdidos = leads.filter(l => l.status === 'lost').length;
+  const landing = leads.filter(l => l.source === 'landing-chat' || l.source === 'landing').length;
+  const whatsapp = leads.filter(l => l.source === 'whatsapp').length;
 
-    // Stats cards
-    const statsGrid = h('div', { style: 'display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem;' });
-    const statsDef = [
-        { label: 'Total Leads', value: s.total, color: '#f59e0b' },
-        { label: 'Nuevos Hoy', value: s.newToday, color: '#22c55e' },
-        { label: 'Tasa Conversión', value: s.conversion + '%', color: '#3b82f6' },
-        { label: 'Fuente Principal', value: s.mostPopularSource, color: '#a855f7' },
-    ];
-    statsDef.forEach(st => {
-        const card = h('div', { className: 'card' });
-        card.innerHTML = `<div style="font-size:0.8rem;color:#888;margin-bottom:0.5rem;">${st.label}</div>
-                          <div style="font-size:1.8rem;font-weight:700;font-family:Space Grotesk,sans-serif;color:${st.color}">${st.value}</div>`;
-        statsGrid.appendChild(card);
+  let statsHTML = `<div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">Total leads</div><div class="stat-value">${total}</div></div>
+    <div class="stat-card"><div class="stat-label">Nuevos</div><div class="stat-value" style="color:${STATUS_MAP.new.color}">${nuevos}</div></div>
+    <div class="stat-card"><div class="stat-label">En seguimiento</div><div class="stat-value" style="color:${STATUS_MAP.trial_scheduled.color}">${enSeguimiento}</div></div>
+    <div class="stat-card"><div class="stat-label">Cerrados</div><div class="stat-value" style="color:${STATUS_MAP.enrolled.color}">${cerrados}</div></div>
+    <div class="stat-card"><div class="stat-label">Fuente</div>
+      <div class="stat-breakdown">
+        <div class="stat-breakdown-item"><span class="stat-breakdown-dot" style="background:var(--amber)"></span>Landing: ${landing}</div>
+        <div class="stat-breakdown-item"><span class="stat-breakdown-dot" style="background:var(--green)"></span>WhatsApp: ${whatsapp}</div>
+      </div>
+    </div>
+    <div class="stat-card"><div class="stat-label">Perdidos</div><div class="stat-value" style="color:${STATUS_MAP.lost.color}">${perdidos}</div></div>
+  </div>`;
+
+  // Lead list compact
+  let tableHTML = `<div class="table-wrap"><div class="table-filters">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="search-input" placeholder="Buscar leads…" value="${esc(state.searchTerm)}" oninput="state.searchTerm=this.value;state.currentPage=1;renderResumen()">
+    </div>
+    <select style="background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.4rem .6rem;color:var(--text-primary);font-family:var(--font);font-size:.85rem;outline:none" onchange="state.filterStatus=this.value;state.currentPage=1;renderResumen()">
+      <option value="">Todos los estados</option>
+      ${STATUS_ORDER.map(s => `<option value="${s}"${state.filterStatus===s?' selected':''}>${STATUS_LABELS[s]}</option>`).join('')}
+    </select>
+  </div>`;
+
+  // Filter + paginate
+  let filtered = [...leads];
+  if (state.filterStatus) filtered = filtered.filter(l => l.status === state.filterStatus);
+  if (state.searchTerm) {
+    const t = state.searchTerm.toLowerCase();
+    filtered = filtered.filter(l => (l.name||'').toLowerCase().includes(t) || (l.phone||'').toLowerCase().includes(t) || (l.email||'').toLowerCase().includes(t) || (l.business_type||'').toLowerCase().includes(t) || (l.source||'').toLowerCase().includes(t));
+  }
+  const totalFiltered = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(totalFiltered / state.perPage));
+  if (state.currentPage > totalPages) state.currentPage = totalPages;
+  const start = (state.currentPage - 1) * state.perPage;
+  const pageLeads = filtered.slice(start, start + state.perPage);
+
+  if (pageLeads.length === 0) {
+    tableHTML += `<div class="empty-state">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+      <p>${state.searchTerm || state.filterStatus ? 'No hay leads que coincidan' : 'Aún no hay leads. ¡Conecta tu landing page!'}</p>
+    </div>`;
+  } else {
+    tableHTML += `<div style="overflow-x:auto"><table>
+      <thead><tr>
+        <th onclick="sortLeads('name')">Nombre ${sortIcon('name')}</th>
+        <th onclick="sortLeads('phone')">Teléfono</th>
+        <th onclick="sortLeads('business_type')">Negocio</th>
+        <th onclick="sortLeads('source')">Fuente</th>
+        <th onclick="sortLeads('status')">Estado</th>
+        <th onclick="sortLeads('created_at')">Fecha ${sortIcon('created_at')}</th>
+        <th>Tiempo</th>
+        <th></th>
+      </tr></thead><tbody>`;
+    pageLeads.forEach(l => {
+      const phoneClean = (l.phone||'').replace(/[^0-9]/g,'');
+      const waNumber = phoneClean.startsWith('34') ? phoneClean : '34' + phoneClean;
+      tableHTML += `<tr onclick="openDetail(${JSON.stringify(l).replace(/"/g,'&quot;')})" style="cursor:pointer">
+        <td><strong>${esc(l.name)}</strong></td>
+        <td>${phoneLink(l.phone)}</td>
+        <td>${esc(l.business_type || '—')}</td>
+        <td>${sourceBadgeHTML(l.source)}</td>
+        <td>${statusBadgeHTML(l.status)}</td>
+        <td style="white-space:nowrap">${formatDate(l.created_at)}</td>
+        <td><span class="time-ago">${timeAgo(l.created_at)}</span></td>
+        <td>
+          <a href="https://wa.me/${waNumber}" target="_blank" rel="noopener" class="btn btn-whatsapp btn-xs" onclick="event.stopPropagation()" title="Abrir WhatsApp">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+            WA
+          </a>
+        </td>
+      </tr>`;
     });
-    container.appendChild(statsGrid);
+    tableHTML += `</tbody></table></div>`;
 
-    // Charts row
-    const chartRow = h('div', { style: 'display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;' });
+    // Pagination
+    tableHTML += `<div class="pagination">
+      <span>${totalFiltered} lead${totalFiltered !== 1 ? 's' : ''} ${state.filterStatus ? 'filtrados' : ''}</span>
+      ${totalPages > 1 ? `<div class="pagination-pages">
+        <button class="btn btn-ghost btn-xs" onclick="state.currentPage=Math.max(1,state.currentPage-1);renderResumen()" ${state.currentPage <= 1 ? 'disabled style="opacity:.3"' : ''}>‹</button>
+        <span style="padding:0 .5rem;font-size:.85rem">${state.currentPage} / ${totalPages}</span>
+        <button class="btn btn-ghost btn-xs" onclick="state.currentPage=Math.min(${totalPages},state.currentPage+1);renderResumen()" ${state.currentPage >= totalPages ? 'disabled style="opacity:.3"' : ''}>›</button>
+      </div>` : ''}
+    </div>`;
+  }
 
-    const chartCard1 = h('div', { className: 'card' });
-    chartCard1.innerHTML = `<h3 style="font-size:1rem;margin-bottom:1rem;">Leads en los últimos 7 días</h3>
-                            <canvas id="chart-leads-time" style="width:100%;height:200px;"></canvas>`;
-    chartRow.appendChild(chartCard1);
+  tableHTML += `</div>`;
+  $('mainContent').innerHTML = statsHTML + tableHTML;
+}
 
-    const chartCard2 = h('div', { className: 'card' });
-    chartCard2.innerHTML = `<h3 style="font-size:1rem;margin-bottom:1rem;">Distribución por estado</h3>
-                            <canvas id="chart-status" style="width:100%;height:200px;"></canvas>`;
-    chartRow.appendChild(chartCard2);
-    container.appendChild(chartRow);
+function renderLeads() {
+  // Same as resumen but just the table view, full screen
+  state.currentView = 'leads';
+  renderResumen();
+}
 
-    // Recent Activities + Status Summary
-    const bottomRow = h('div', { style: 'display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;' });
-
-    // Recent Activities
-    const recentCard = h('div', { className: 'card' });
-    recentCard.innerHTML = '<h3 style="font-size:1rem;margin-bottom:1rem;">Actividad Reciente</h3>';
-    if (state.recentActivities.length === 0) {
-        recentCard.innerHTML += '<p style="color:#888;font-size:0.9rem;">Sin actividad reciente</p>';
+function renderKanban() {
+  const leads = state.leads;
+  let html = `<div style="display:flex;gap:1rem;overflow-x:auto;padding-bottom:1rem;height:100%;align-items:flex-start">`;
+  STATUS_ORDER.forEach(status => {
+    const info = STATUS_MAP[status];
+    const cards = leads.filter(l => l.status === status);
+    html += `<div style="flex-shrink:0;width:280px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;max-height:100%">
+      <div style="padding:.85rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <span style="display:flex;align-items:center;gap:.5rem;font-weight:600;font-size:.85rem">
+          <span class="status-dot" style="background:${info.color}"></span>
+          ${esc(info.label)}
+        </span>
+        <span style="background:${info.bg};color:${info.color};font-size:.75rem;font-weight:600;padding:.15rem .5rem;border-radius:100px">${cards.length}</span>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:.75rem">`;
+    if (cards.length === 0) {
+      html += `<div style="text-align:center;padding:2rem .5rem;color:var(--text-muted);font-size:.8rem;border:1px dashed var(--border);border-radius:var(--radius-sm)">
+        Sin leads
+      </div>`;
     } else {
-        const list = h('ul', { style: 'list-style:none;' });
-        state.recentActivities.slice(0, 8).forEach(a => {
-            const li = h('li', { style: 'display:flex;justify-content:space-between;align-items:center;padding:0.5rem 0;border-bottom:1px solid #2a2924;font-size:0.85rem;' });
-            li.innerHTML = `<span>${a.name}</span><span class="badge ${statusBadge(a.status)}" style="font-size:0.7rem;">${statusLabel(a.status)}</span>`;
-            list.appendChild(li);
-        });
-        recentCard.appendChild(list);
+      cards.forEach(l => {
+        const phoneClean = (l.phone||'').replace(/[^0-9]/g,'');
+        const waNumber = phoneClean.startsWith('34') ? phoneClean : '34' + phoneClean;
+        html += `<div class="card" style="margin-bottom:.6rem;cursor:pointer;padding:.85rem" onclick='openDetail(${JSON.stringify(l).replace(/'/g,"&#x27;")})'>
+          <div style="font-weight:600;font-size:.88rem;margin-bottom:.2rem">${esc(l.name)}</div>
+          <div style="font-size:.78rem;color:var(--text-secondary);margin-bottom:.3rem">${esc(l.business_type || '—')} · ${sourceBadgeHTML(l.source)}</div>
+          <div style="font-size:.75rem;color:var(--text-muted)">${timeAgo(l.created_at)}</div>
+          <div style="margin-top:.5rem;display:flex;gap:.35rem">
+            <a href="https://wa.me/${waNumber}" target="_blank" rel="noopener" class="btn btn-whatsapp btn-xs" onclick="event.stopPropagation()">WhatsApp</a>
+          </div>
+        </div>`;
+      });
     }
-    bottomRow.appendChild(recentCard);
-
-    // Status Summary
-    const statusCard = h('div', { className: 'card' });
-    statusCard.innerHTML = '<h3 style="font-size:1rem;margin-bottom:1rem;">Resumen de Estados</h3>';
-    STATUSES.forEach(st => {
-        const count = s[st.key] || 0;
-        const pct = s.total > 0 ? Math.round((count / s.total) * 100) : 0;
-        const row = h('div', { style: 'display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0;font-size:0.85rem;' });
-        row.innerHTML = `<span style="display:flex;align-items:center;gap:0.5rem;">
-                            <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${getStatusColor(st.key)};"></span>
-                            ${st.label}
-                         </span>
-                         <span><strong>${count}</strong> <span style="color:#888;font-size:0.75rem;">(${pct}%)</span></span>`;
-        statusCard.appendChild(row);
-    });
-    bottomRow.appendChild(statusCard);
-
-    container.appendChild(bottomRow);
+    html += `</div></div>`;
+  });
+  html += `</div>`;
+  $('mainContent').innerHTML = html;
 }
 
-function getStatusColor(key) {
-    const map = { new: '#f59e0b', contacted: '#22c55e', qualified: '#3b82f6', demo: '#a855f7', client: '#14b8a6', lost: '#ef4444' };
-    return map[key] || '#888';
+function sortLeads(col) {
+  if (state.sortCol === col) {
+    state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    state.sortCol = col;
+    state.sortDir = 'desc';
+  }
+  state.leads.sort((a, b) => {
+    const va = (a[col] || '').toString().toLowerCase();
+    const vb = (b[col] || '').toString().toLowerCase();
+    if (va < vb) return state.sortDir === 'asc' ? -1 : 1;
+    if (va > vb) return state.sortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
+  renderResumen();
 }
 
-function renderLeads(container) {
-    const filtered = getLeadsFiltered();
-
-    // Status filter buttons
-    const filterRow = h('div', { style: 'display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;' });
-    const allBtn = h('button', { className: `btn btn-sm ${!state.filterStatus ? 'btn-primary' : 'btn-secondary'}`, onClick: () => { state.filterStatus = ''; render(); } });
-    allBtn.textContent = `Todos (${state.leads.length})`;
-    filterRow.appendChild(allBtn);
-
-    STATUSES.forEach(st => {
-        const count = state.leads.filter(l => l.status === st.key).length;
-        const btn = h('button', { className: `btn btn-sm ${state.filterStatus === st.key ? 'btn-primary' : 'btn-secondary'}`, onClick: () => { state.filterStatus = st.key; render(); } });
-        btn.innerHTML = `${st.label} (${count})`;
-        filterRow.appendChild(btn);
-    });
-
-    const exportBtn = h('button', { className: 'btn btn-sm btn-secondary', onClick: exportCSV });
-    exportBtn.textContent = '📥 Export CSV';
-    filterRow.appendChild(exportBtn);
-    container.appendChild(filterRow);
-
-    // Table
-    const tableWrapper = h('div', { className: 'card', style: 'overflow-x:auto;' });
-    const table = document.createElement('table');
-    const thead = document.createElement('thead');
-    const headerRow = document.createElement('tr');
-
-    const cols = [
-        { field: 'created_at', label: 'Fecha' },
-        { field: 'name', label: 'Nombre' },
-        { field: 'phone', label: 'Teléfono' },
-        { field: 'email', label: 'Email' },
-        { field: 'course_interest', label: 'Interés' },
-        { field: 'source', label: 'Origen' },
-        { field: 'status', label: 'Estado' },
-        { field: null, label: 'Acciones' },
-    ];
-
-    cols.forEach(col => {
-        const th = document.createElement('th');
-        if (col.field) {
-            th.onclick = () => toggleSort(col.field);
-            const arrow = state.sort.field === col.field ? (state.sort.dir === 'asc' ? '↑' : '↓') : '';
-            th.innerHTML = `${col.label} <span class="sort-arrow">${arrow}</span>`;
-        } else {
-            th.textContent = col.label;
-        }
-        headerRow.appendChild(th);
-    });
-    thead.appendChild(headerRow);
-    table.appendChild(thead);
-
-    const tbody = document.createElement('tbody');
-    if (filtered.length === 0) {
-        const tr = document.createElement('tr');
-        const td = document.createElement('td');
-        td.colSpan = 8;
-        td.style.cssText = 'text-align:center;padding:2rem;color:#888;';
-        td.textContent = 'No se encontraron leads';
-        tr.appendChild(td);
-        tbody.appendChild(tr);
-    } else {
-        filtered.forEach(lead => {
-            const tr = document.createElement('tr');
-            tr.onclick = () => { state.selectedLead = lead; renderDetailPanel(); };
-
-            const cells = [
-                lead.created_at ? new Date(lead.created_at).toLocaleDateString('es') : '—',
-                lead.name || '—',
-                lead.phone || '—',
-                lead.email || '—',
-                lead.course_interest || lead.business_type || '—',
-                lead.source || '—',
-                `<span class="badge ${statusBadge(lead.status)}">${statusLabel(lead.status)}</span>`,
-            ];
-            cells.forEach(cell => {
-                const td = document.createElement('td');
-                td.innerHTML = cell;
-                tr.appendChild(td);
-            });
-
-            // Actions
-            const tdActions = document.createElement('td');
-            const editBtn = h('button', { className: 'btn btn-sm btn-secondary', onClick: e => { e.stopPropagation(); openEdit(lead); } });
-            editBtn.textContent = '✏️';
-            tdActions.appendChild(editBtn);
-            const delBtn = h('button', { className: 'btn btn-sm btn-danger', style: 'margin-left:0.25rem;', onClick: e => { e.stopPropagation(); confirmDelete(lead); } });
-            delBtn.textContent = '🗑️';
-            tdActions.appendChild(delBtn);
-            tr.appendChild(tdActions);
-
-            tbody.appendChild(tr);
-        });
-    }
-    table.appendChild(tbody);
-    tableWrapper.appendChild(table);
-    container.appendChild(tableWrapper);
-
-    // Pagination info
-    const info = h('div', { style: 'text-align:center;color:#888;font-size:0.85rem;margin-top:0.75rem;' });
-    info.textContent = `Mostrando ${filtered.length} de ${state.leads.length} leads`;
-    container.appendChild(info);
+function sortIcon(col) {
+  if (state.sortCol !== col) return '';
+  return state.sortDir === 'asc' ? ' ↑' : ' ↓';
 }
 
-function renderPipeline(container) {
-    const pipelineRow = h('div', { style: 'display:flex;gap:0.75rem;overflow-x:auto;padding-bottom:1rem;' });
-
-    STATUSES.forEach((st, idx) => {
-        const colLeads = state.leads.filter(l => l.status === st.key);
-        const col = h('div', { className: 'kanban-col' });
-
-        // Column header
-        const colHeader = h('div', { style: 'margin-bottom:0.75rem;' });
-        colHeader.innerHTML = `<h3 style="font-size:0.9rem;display:flex;justify-content:space-between;align-items:center;">
-            <span style="display:flex;align-items:center;gap:0.5rem;">
-                <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${getStatusColor(st.key)};"></span>
-                ${st.label}
-            </span>
-            <span style="background:#2a2924;padding:0.15rem 0.5rem;border-radius:999px;font-size:0.75rem;">${colLeads.length}</span>
-        </h3>`;
-        col.appendChild(colHeader);
-
-        // Cards
-        colLeads.forEach(lead => {
-            const card = h('div', { className: 'card card-hover', style: 'margin-bottom:0.5rem;cursor:pointer;padding:0.75rem;', onClick: () => { state.selectedLead = lead; renderDetailPanel(); } });
-            card.innerHTML = `
-                <div style="font-weight:600;font-size:0.9rem;margin-bottom:0.25rem;">${lead.name || '(sin nombre)'}</div>
-                <div style="color:#888;font-size:0.8rem;">${lead.phone || ''}</div>
-                <div style="color:#888;font-size:0.75rem;margin-top:0.25rem;">${lead.course_interest || lead.business_type || ''}</div>
-                <div style="margin-top:0.5rem;">
-                    <span class="badge ${statusBadge(lead.status)}" style="font-size:0.65rem;">${statusLabel(lead.status)}</span>
-                </div>
-            `;
-            col.appendChild(card);
-
-            // Quick status change buttons
-            if (idx < STATUSES.length - 1) {
-                const nextStatus = STATUSES[idx + 1].key;
-                const nextLabel = STATUSES[idx + 1].label;
-                const moveBtn = h('button', { className: 'btn btn-sm btn-primary', style: 'width:100%;margin-top:0.35rem;font-size:0.7rem;', onClick: e => { e.stopPropagation(); updateStatus(lead.id, nextStatus); } });
-                moveBtn.innerHTML = `→ ${nextLabel}`;
-                col.appendChild(moveBtn);
-            }
-        });
-
-        pipelineRow.appendChild(col);
-    });
-
-    container.appendChild(pipelineRow);
+function refreshData() {
+  fetchLeads();
 }
 
-function renderAnalytics(container) {
-    const s = state.stats;
-
-    // Summary row
-    const summary = h('div', { style: 'display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.5rem;' });
-    [
-        { label: 'Total Leads', value: s.total },
-        { label: 'Tasa Conversión', value: s.conversion + '%' },
-        { label: 'Nuevos', value: s.new },
-        { label: 'Clientes', value: s.client },
-        { label: 'Perdidos', value: s.lost },
-        { label: 'Contactados', value: s.contacted },
-    ].forEach(item => {
-        const card = h('div', { className: 'card', style: 'text-align:center;padding:1rem;' });
-        card.innerHTML = `<div style="font-size:0.75rem;color:#888;margin-bottom:0.25rem;">${item.label}</div>
-                          <div style="font-size:1.5rem;font-weight:700;font-family:Space Grotesk,sans-serif;">${item.value}</div>`;
-        summary.appendChild(card);
-    });
-    container.appendChild(summary);
-
-    // Charts
-    const chartGrid = h('div', { style: 'display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;' });
-
-    const chart1 = h('div', { className: 'card' });
-    chart1.innerHTML = `<h3 style="font-size:1rem;margin-bottom:1rem;">Leads por día (últimos 7 días)</h3>
-                        <canvas id="chart-leads-time" style="width:100%;height:220px;"></canvas>`;
-    chartGrid.appendChild(chart1);
-
-    const chart2 = h('div', { className: 'card' });
-    chart2.innerHTML = `<h3 style="font-size:1rem;margin-bottom:1rem;">Distribución de estados</h3>
-                        <canvas id="chart-status" style="width:100%;height:220px;"></canvas>`;
-    chartGrid.appendChild(chart2);
-    container.appendChild(chartGrid);
-
-    // Sources table
-    const sourcesCard = h('div', { className: 'card', style: 'margin-bottom:1.5rem;' });
-    sourcesCard.innerHTML = '<h3 style="font-size:1rem;margin-bottom:1rem;">Fuentes de leads</h3>';
-    const sourceTable = document.createElement('table');
-    sourceTable.innerHTML = `<thead><tr><th>Fuente</th><th>Leads</th><th>%</th></tr></thead><tbody>
-        ${state.topSources.map(ts => `
-            <tr><td>${ts.source}</td><td>${ts.count}</td><td>${s.total > 0 ? Math.round((ts.count / s.total) * 100) : 0}%</td></tr>
-        `).join('')}
-    </tbody>`;
-    sourcesCard.appendChild(sourceTable);
-    container.appendChild(sourcesCard);
+// ─── Init ───
+function init() {
+  fetchLeads();
+  // Auto-refresh every 30s
+  setInterval(fetchLeads, 30000);
 }
 
-function renderDetailPanel() {
-    // Remove existing panel
-    document.querySelectorAll('.detail-panel').forEach(el => el.remove());
-
-    if (!state.selectedLead) return;
-    const l = state.selectedLead;
-
-    const panel = h('div', { className: 'detail-panel open' });
-
-    const header = h('div', { style: 'display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;' });
-    header.innerHTML = `<h2 style="font-size:1.1rem;">${l.name || 'Lead'}</h2>
-                        <button class="btn btn-sm btn-secondary" onclick="
-                            document.querySelector('.detail-panel')?.remove();
-                            state.selectedLead = null;
-                        ">✕</button>`;
-    panel.appendChild(header);
-
-    // Status badge + change
-    const statusRow = h('div', { style: 'margin-bottom:1rem;' });
-    statusRow.innerHTML = `<span class="badge ${statusBadge(l.status)}">${statusLabel(l.status)}</span>`;
-    panel.appendChild(statusRow);
-
-    // Quick status change
-    const statusSelect = document.createElement('select');
-    statusSelect.style.cssText = 'width:100%;margin-top:0.5rem;';
-    STATUSES.forEach(st => {
-        const opt = document.createElement('option');
-        opt.value = st.key;
-        opt.textContent = st.label;
-        if (st.key === l.status) opt.selected = true;
-        statusSelect.appendChild(opt);
-    });
-    statusSelect.onchange = () => updateStatus(l.id, statusSelect.value);
-    panel.appendChild(statusSelect);
-
-    // Details
-    const details = [
-        { label: 'Teléfono', value: l.phone || '—' },
-        { label: 'Email', value: l.email || '—' },
-        { label: 'Interés', value: l.course_interest || l.business_type || '—' },
-        { label: 'Descripción', value: l.problem_description || '—' },
-        { label: 'Origen', value: l.source || '—' },
-        { label: 'Creado', value: l.created_at ? new Date(l.created_at).toLocaleString('es') : '—' },
-    ];
-
-    const detailList = h('div', { style: 'margin-top:1rem;' });
-    details.forEach(d => {
-        const row = h('div', { style: 'margin-bottom:0.75rem;' });
-        row.innerHTML = `<div style="font-size:0.75rem;color:#888;margin-bottom:0.15rem;">${d.label}</div>
-                         <div style="font-size:0.9rem;">${d.value}</div>`;
-        detailList.appendChild(row);
-    });
-    panel.appendChild(detailList);
-
-    // Actions
-    const actions = h('div', { style: 'display:flex;gap:0.5rem;margin-top:1.5rem;' });
-    const editBtn = h('button', { className: 'btn btn-primary btn-sm', onClick: () => { const l2 = state.selectedLead; openEdit(l2); } });
-    editBtn.textContent = '✏️ Editar';
-    actions.appendChild(editBtn);
-    const delBtn = h('button', { className: 'btn btn-danger btn-sm', onClick: () => confirmDelete(l) });
-    delBtn.textContent = '🗑️ Eliminar';
-    actions.appendChild(delBtn);
-    panel.appendChild(actions);
-
-    document.body.appendChild(panel);
-    setTimeout(() => panel.classList.add('open'), 10);
-}
-
-// ===================== EXPORT =====================
-function exportCSV() {
-    const leads = state.leads;
-    const headers = ['Nombre', 'Teléfono', 'Email', 'Interés', 'Tipo Negocio', 'Problema', 'Estado', 'Origen', 'Fecha'];
-    const rows = leads.map(l => [
-        `"${(l.name || '').replace(/"/g, '""')}"`,
-        `"${(l.phone || '').replace(/"/g, '""')}"`,
-        `"${(l.email || '').replace(/"/g, '""')}"`,
-        `"${(l.course_interest || '').replace(/"/g, '""')}"`,
-        `"${(l.business_type || '').replace(/"/g, '""')}"`,
-        `"${(l.problem_description || '').replace(/"/g, '""')}"`,
-        statusLabel(l.status),
-        l.source || 'whatsapp',
-        l.created_at ? new Date(l.created_at).toISOString() : '',
-    ]);
-
-    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `generaia-leads-${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-}
-
-// ===================== INIT =====================
-render();
-loadLeads();
-
-// Auto-refresh every 30 seconds
-setInterval(loadLeads, 30000);
+document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
